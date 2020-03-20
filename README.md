@@ -24,8 +24,8 @@
     - `git config --global user.name "Your Name"` (replace `Your Name` with your real name).
 
 - Clone the repository:
-    - using ssh key: `git clone git@github.com:DomagojVrgoc/GraphDB.git`
-    - without ssh key: `git clone https://github.com/DomagojVrgoc/GraphDB.git`
+    - using ssh key: `git clone git@github.com:PUC-IIC3141/IIC3413-DB.git`
+    - without ssh key: `git clone https://github.com/PUC-IIC3141/IIC3413-DB.git`
 
 - Install Visual Studio Code:
     - Download and install from https://code.visualstudio.com/. Select the .deb installer.
@@ -64,10 +64,10 @@
         - `git config --global user.name "Your Name"` (replace `Your Name` with your real name).
 
     - Clone the repository:
-        - using ssh key: `git clone git@github.com:DomagojVrgoc/GraphDB.git`
-        - without ssh key: `git clone https://github.com/DomagojVrgoc/GraphDB.git`
+        - using ssh key: `git clone git@github.com:PUC-IIC3141/IIC3413-DB.git`
+        - without ssh key: `git clone https://github.com/PUC-IIC3141/IIC3413-DB.git`
     - Enter to the project folder:
-        - `cd GraphDB`
+        - `cd IIC3413-DB`
     - Open the project in Visual Studio Code:
         - `code .`
     - Install recomended Visual Studio Code Extensions (optional, highly recomended):
