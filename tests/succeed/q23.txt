@@ -1,0 +1,3 @@
+SELECT ?n.name
+MATCH (?n)
+WHERE ?n.age == 27

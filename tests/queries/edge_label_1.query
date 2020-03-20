@@ -1,0 +1,5 @@
+// Busqueda de nodo por label
+// largo string = 7 (inlined)
+// varios resultados
+SELECT *
+MATCH ()-[?e :clasped]->()

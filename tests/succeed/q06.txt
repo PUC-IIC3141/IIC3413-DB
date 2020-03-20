@@ -1,0 +1,2 @@
+SELECT ?n.name
+MATCH (?n {age: 27, occupation: "accountant"})

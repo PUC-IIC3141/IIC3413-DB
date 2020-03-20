@@ -1,0 +1,2 @@
+SELECT ?n.name
+MATCH (?n :Person :Accountant {age: 27, occupation: "accountant"})

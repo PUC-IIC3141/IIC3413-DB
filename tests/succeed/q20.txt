@@ -1,0 +1,2 @@
+SELECT ?n.name
+MATCH (?n {name:"John"}) -[:knows]-> (?m {name: "John"})

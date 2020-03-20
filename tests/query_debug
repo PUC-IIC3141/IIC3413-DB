@@ -1,0 +1,3 @@
+SELECT *
+MATCH (?n :detection)
+WHERE ?n.aperitifs == ""

@@ -1,0 +1,5 @@
+// Busqueda de nodo por label
+// largo string = 7 (inline)
+// unico resultado
+SELECT *
+MATCH (?n :unique1)
