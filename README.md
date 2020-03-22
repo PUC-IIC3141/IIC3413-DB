@@ -8,6 +8,7 @@
 
 # Set up
 ## Set up on Ubuntu-based linux distributions
+**Distribution must be based on Ubuntu 18.04 or greater**
 - Install prerrequisites to compile:
     - `sudo apt update`
     - `sudo apt install git g++ cmake libssl-dev libboost-dev gdb wamerican`
@@ -41,7 +42,7 @@
 - Install WSL:
     - Open PowerShell as administrator and run `Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux`
     - Restart when prompted.
-    - Install Ubuntu from Microsoft Store.
+    - Install Ubuntu (18.04 or greater) from Microsoft Store.
 - Install Visual Studio Code
     - Download and install from https://code.visualstudio.com/
     - Install the extension Remote-WSL
