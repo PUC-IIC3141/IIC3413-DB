@@ -61,7 +61,6 @@ int main(int argc, char **argv) {
             char c = (query_length << offset) & 0xFF;
             query_size_b[i] = c;
         }
-        cout << "Query length: " << query_length << "\n";
         boost::asio::write(s, boost::asio::buffer(query_size_b, db_server::BYTES_FOR_QUERY_LENGTH));
         boost::asio::write(s, boost::asio::buffer(query.data(), query_length));
 
