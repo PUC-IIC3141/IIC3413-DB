@@ -52,11 +52,11 @@ namespace bulk_import_parser
     ///////////////////////////////////////////////////////////
     auto const key =
         // lexeme[+alnum];
-        lexeme[+char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'")];
+        lexeme[+char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'_")];
 
     auto const label =
         // lexeme[':' >> +alnum];
-        lexeme[':' >> +char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'")];
+        lexeme[':' >> +char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'_")];
 
 
     auto const boolean = lexeme[
@@ -65,8 +65,8 @@ namespace bulk_import_parser
     ];
 
     auto const string =
-        ('"'  >> *(char_ - '"')  >> '"') |
-        ('\'' >> *(char_ - '\'') >> '\'');
+        (lexeme['"' >> *(char_ - '"') >> '"']) |
+        (lexeme['\'' >> *(char_ - '\'') >> '\'']);
 
     auto const value_def =
         string | float_ | int32 | boolean;

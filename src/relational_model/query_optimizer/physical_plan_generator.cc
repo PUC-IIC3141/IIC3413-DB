@@ -11,6 +11,7 @@
 #include "base/parser/logical_plan/op/op_filter.h"
 #include "base/parser/logical_plan/op/op_match.h"
 #include "base/parser/logical_plan/op/op_select.h"
+#include "base/parser/logical_plan/op/op_lonely_node.h"
 #include "relational_model/graph/relational_graph.h"
 #include "relational_model/relational_model.h"
 #include "relational_model/physical_plan/binding_iter/filter.h"
@@ -19,6 +20,7 @@
 #include "relational_model/query_optimizer/query_optimizer_connection.h"
 #include "relational_model/query_optimizer/query_optimizer_label.h"
 #include "relational_model/query_optimizer/query_optimizer_property.h"
+#include "relational_model/query_optimizer/query_optimizer_lonely_node.h"
 
 using namespace std;
 
@@ -31,10 +33,10 @@ unique_ptr<BindingIter> PhysicalPlanGenerator::exec(OpSelect& op_select) {
 }
 
 
-void PhysicalPlanGenerator::visit (OpSelect& op_select) {
+void PhysicalPlanGenerator::visit(OpSelect& op_select) {
     if (op_select.select_all) {
         op_select.op->accept_visitor(*this);
-        tmp = make_unique<Projection>(move(tmp));
+        tmp = make_unique<Projection>(move(tmp), op_select.limit);
     }
     else {
         set<std::string> projection_vars;
@@ -43,7 +45,7 @@ void PhysicalPlanGenerator::visit (OpSelect& op_select) {
             projection_vars.insert(key + '.' + value);
         }
         op_select.op->accept_visitor(*this);
-        tmp = make_unique<Projection>(move(tmp), move(projection_vars));
+        tmp = make_unique<Projection>(move(tmp), move(projection_vars), op_select.limit);
     }
 }
 
@@ -51,56 +53,76 @@ void PhysicalPlanGenerator::visit (OpSelect& op_select) {
 void PhysicalPlanGenerator::visit(OpMatch& op_match) {
     VarId null_var { -1 };
     vector<unique_ptr<QueryOptimizerElement>> elements;
-    var_info = op_match.var_info; // TODO: improve performance using move?
 
+    for (auto&& [var_name, graph_name] : op_match.var_name2graph_name) {
+        auto graph_id = RelationalModel::get_catalog().get_graph(graph_name);
+        graph_ids.insert({ graph_name, graph_id }); // may try to insert a repeated pair, this is OK, it won't be duplicated
+        var2graph_id.insert({ var_name, graph_id });
+    }
+    element_types =  op_match.var_name2type;
+
+    // Process Labels
     for (auto& op_label : op_match.labels) {
-        ObjectId label_id = RelationalModel::get_string_unmasked_id(op_label->label);
-        VarId element_obj_id = get_var_id(op_label->var);
-        elements.push_back(make_unique<QueryOptimizerLabel>(op_label->graph_id, element_obj_id, null_var, op_label->type, label_id));
+        auto graph_id = graph_ids[op_label->graph_name];
+        auto element_var_id = get_var_id(op_label->var);
+        auto label_id = RelationalModel::get_string_unmasked_id(op_label->label);
+        elements.push_back(
+            make_unique<QueryOptimizerLabel>(graph_id, element_var_id, null_var, op_label->type, label_id)
+        );
     }
 
+    // Process properties from Match
     for (auto& op_property : op_match.properties) {
-        VarId element_obj_id = get_var_id(op_property->var);
-        ObjectId key_id = RelationalModel::get_string_unmasked_id(op_property->key);
-        ObjectId value_id;
+        auto element_var_id = get_var_id(op_property->var);
+        auto key_id = RelationalModel::get_string_unmasked_id(op_property->key);
+        ObjectId value_id = get_value_id(op_property->value);
 
-        if (op_property->value.type() == typeid(string)) {
-            auto val_str = boost::get<string>(op_property->value);
-            value_id = RelationalModel::get_value_masked_id(ValueString(val_str));
-        }
-        else if (op_property->value.type() == typeid(int)) {
-            auto val_int = boost::get<int>(op_property->value);
-            value_id = RelationalModel::get_value_masked_id(ValueInt(val_int));
-        }
-        else if (op_property->value.type() == typeid(float)) {
-            auto val_float = boost::get<float>(op_property->value);
-            value_id = RelationalModel::get_value_masked_id(ValueFloat(val_float));
-        }
-        else if (op_property->value.type() == typeid(bool)) {
-            auto val_bool = boost::get<bool>(op_property->value);
-            value_id = RelationalModel::get_value_masked_id(ValueBool(val_bool));
-        }
-        else {
-            throw logic_error("only strings supported for now.");
-        }
-
+        auto graph_id = graph_ids[op_property->graph_name];
         elements.push_back(make_unique<QueryOptimizerProperty>(
-            op_property->graph_id, element_obj_id, null_var, null_var, op_property->type, key_id, value_id ));
+            graph_id, element_var_id, null_var, null_var, op_property->type, key_id, value_id ));
     }
 
-    // Properties from select
+    // Process properties from select
     for (auto&& [var, key] : select_items) {
-        VarId element_obj_id = get_var_id(var);
-        VarId value_var = get_var_id(var + '.' + key);
-        ObjectId key_id = RelationalModel::get_string_unmasked_id(key);
+        auto graph_id = var2graph_id[var];
+        auto element_var_id = get_var_id(var);
+        auto value_var = get_var_id(var + '.' + key);
+        auto key_id = RelationalModel::get_string_unmasked_id(key);
+        auto element_type = element_types[var];
 
         elements.push_back(make_unique<QueryOptimizerProperty>(
-            var_info[var].first, element_obj_id, null_var, value_var, var_info[var].second, key_id, ObjectId(NULL_OBJECT_ID) ));
+            graph_id, element_var_id, null_var, value_var, element_type, key_id, ObjectId(NULL_OBJECT_ID) ));
     }
 
+    // Process Lonely Nodes not present in select
+    for (auto& lonely_node : op_match.lonely_nodes) {
+        bool lonely_node_mentioned_int_select = false;
+        for (auto& pair : select_items) {
+            if (pair.first == lonely_node->var) {
+                lonely_node_mentioned_int_select = true;
+                break;
+            }
+        }
+        if (!lonely_node_mentioned_int_select) {
+            auto graph_id = graph_ids[lonely_node->graph_name];
+            auto element_var_id = get_var_id(lonely_node->var);
+            elements.push_back(
+                make_unique<QueryOptimizerLonelyNode>(graph_id, element_var_id)
+            );
+        }
+    }
+
+    // Process connections
     for (auto& op_connection : op_match.connections) {
-        elements.push_back(make_unique<QueryOptimizerConnection>(
-            op_connection->graph_id, get_var_id(op_connection->node_from), get_var_id(op_connection->node_to), get_var_id(op_connection->edge) ));
+        auto graph_id = graph_ids[op_connection->graph_name];
+
+        auto node_from_var_id = get_var_id(op_connection->node_from);
+        auto node_to_var_id   = get_var_id(op_connection->node_to);
+        auto edge_var_id      = get_var_id(op_connection->edge);
+
+        elements.push_back(
+            make_unique<QueryOptimizerConnection>(graph_id, node_from_var_id, node_to_var_id, edge_var_id)
+        );
     }
 
     tmp = make_unique<Match>(move(elements), move(id_map));
@@ -110,7 +132,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
 void PhysicalPlanGenerator::visit(OpFilter& op_filter) {
     op_filter.op->accept_visitor(*this);
     if (op_filter.condition != nullptr) {
-        tmp = make_unique<Filter>(move(tmp), move(op_filter.condition), move(var_info));
+        tmp = make_unique<Filter>(move(tmp), move(op_filter.condition), var2graph_id, element_types);
     }
     // else tmp stays the same
 }
@@ -129,6 +151,30 @@ VarId PhysicalPlanGenerator::get_var_id(const std::string& var) {
 }
 
 
+ObjectId PhysicalPlanGenerator::get_value_id(const ast::Value& value) {
+    if (value.type() == typeid(string)) {
+        auto val_str = boost::get<string>(value);
+        return RelationalModel::get_value_masked_id(ValueString(val_str));
+    }
+    else if (value.type() == typeid(int)) {
+        auto val_int = boost::get<int>(value);
+        return RelationalModel::get_value_masked_id(ValueInt(val_int));
+    }
+    else if (value.type() == typeid(float)) {
+        auto val_float = boost::get<float>(value);
+        return RelationalModel::get_value_masked_id(ValueFloat(val_float));
+    }
+    else if (value.type() == typeid(bool)) {
+        auto val_bool = boost::get<bool>(value);
+        return RelationalModel::get_value_masked_id(ValueBool(val_bool));
+    }
+    else {
+        throw logic_error("Unknown value type.");
+    }
+}
+
+
 void PhysicalPlanGenerator::visit (OpLabel&) { }
 void PhysicalPlanGenerator::visit (OpProperty&) { }
 void PhysicalPlanGenerator::visit (OpConnection&) { }
+void PhysicalPlanGenerator::visit (OpLonelyNode&) { }

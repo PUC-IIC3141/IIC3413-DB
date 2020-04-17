@@ -20,6 +20,10 @@ public:
     ConditionType type() {
         return ConditionType::negation;
     }
+
+    void check_names(std::map<std::string, ObjectType>& m) {
+        condition->check_names(m);
+    }
 };
 
 #endif //BASE__NEGATION_H_

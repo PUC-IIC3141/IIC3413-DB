@@ -13,6 +13,10 @@ public:
         : id(id) { }
     ~GraphId() = default;
 
+    operator uint64_t() const {
+        return id;
+    }
+
     bool operator<(const GraphId other) const {
         return this->id < other.id;
     }

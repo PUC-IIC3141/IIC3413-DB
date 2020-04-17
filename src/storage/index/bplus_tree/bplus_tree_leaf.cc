@@ -9,9 +9,9 @@ using namespace std;
 BPlusTreeLeaf::BPlusTreeLeaf(const BPlusTreeParams& params, Page& page)
     : params(params), page(page)
 {
-    value_count = (int*) page.get_bytes();
-    next_leaf   = (int*) (page.get_bytes() + sizeof(int));
-    records     = (uint64_t*) (page.get_bytes() + (2*sizeof(int)) );
+    value_count = reinterpret_cast<int*>(page.get_bytes());
+    next_leaf   = reinterpret_cast<int*>(page.get_bytes() + sizeof(int));
+    records     = reinterpret_cast<uint64_t*>(page.get_bytes() + (2*sizeof(int)) );
 }
 
 

@@ -9,9 +9,8 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY bin)
 
-# set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -O3 -g3")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Og -g3")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 -g0")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Og -g3 -pthread")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 -g0 -pthread")
 
 # set the project name and version
 project(GraphDB VERSION 0.1)
@@ -26,10 +25,11 @@ list(REMOVE_ITEM sources ${CMAKE_CURRENT_SOURCE_DIR}/src/tests/*)
 add_library(graphdb STATIC ${sources})
 
 set(BUILD_TARGETS
-    create_db
+    import_graph
     grammar
     query
     check_bpts
+    server
 )
 
 set(TEST_TARGETS
@@ -38,11 +38,11 @@ set(TEST_TARGETS
 
 foreach(target ${BUILD_TARGETS})
     add_executable(${target} ${CMAKE_SOURCE_DIR}/src/main/${target}.cc)
-    target_link_libraries(${target} graphdb ssl crypto stdc++fs)
+    target_link_libraries(${target} graphdb ssl crypto stdc++fs boost_program_options boost_system)
 endforeach(target)
 
 foreach(target ${TEST_TARGETS})
     add_executable(${target} ${CMAKE_SOURCE_DIR}/src/tests/${target}.cc)
-    target_link_libraries(${target} graphdb ssl crypto stdc++fs)
+    target_link_libraries(${target} graphdb ssl crypto stdc++fs boost_program_options boost_system)
     # add_test(NAME ${target} COMMAND ${target})
 endforeach(target)

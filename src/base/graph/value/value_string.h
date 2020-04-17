@@ -12,7 +12,7 @@ public:
     ~ValueString() = default;
 
     std::unique_ptr<std::vector<unsigned char>> get_bytes() const override {
-        uint8_t string_len = value.length();
+        auto string_len = value.length();
         auto res = std::make_unique<std::vector<unsigned char>>(string_len);
 	    std::copy(value.begin(), value.end(), res->begin());
         return res;

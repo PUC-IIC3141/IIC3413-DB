@@ -6,7 +6,9 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/query",
-            "args": ["${workspaceFolder}/tests/query_debug"],
+            "args": [
+                "${workspaceFolder}/tests/query_debug"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -27,13 +29,19 @@
             ]
         },
         {
-            "name": "CreateDB",
+            "name": "ImportGraph",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/bin/create_db",
+            "program": "${workspaceFolder}/build/Debug/bin/import_graph",
             "args": [
+                "-n",
                 "${workspaceFolder}/test_files/graph_creation_example/nodes.txt",
-                "${workspaceFolder}/test_files/graph_creation_example/edges.txt"
+                "-e",
+                "${workspaceFolder}/test_files/graph_creation_example/edges.txt",
+                "-g",
+                "graph debug",
+                "-d",
+                "test_files/db_example"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

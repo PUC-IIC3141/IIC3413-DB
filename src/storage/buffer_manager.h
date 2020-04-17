@@ -17,18 +17,23 @@
 #include <map>
 #include <string>
 
-const int BUFFER_POOL_SIZE = 65536;
-
 class Page;
-class Buffer;
 
 class BufferManager {
 friend class BufferManagerInitializer;  // needed to access private constructor
 public:
+    static constexpr int DEFAULT_BUFFER_POOL_SIZE = 1024;
+
+    // necesary to be called before first usage
+    void init(int _buffer_pool_size = DEFAULT_BUFFER_POOL_SIZE);
+
     // Get a page. It will search in the buffer and if it is not on it, it will read from disk and put in the buffer.
     // Also it will pin the page, so calling unpin() is expected when the caller doesn't need the returned page
     // anymore.
     Page& get_page(FileId file_id, uint_fast32_t page_number);
+
+    // Similar to get_page, but the page_number is the greatest number such that page number exist on disk.
+    Page& get_last_page(FileId file_id);
 
     // Similar to get_page, but the page_number is the smallest number such that page number does not exist on disk.
     // The page returned has all its bytes initialized to 0. This operation perform a disk write inmediately
@@ -39,20 +44,25 @@ public:
     void flush();
 
 private:
+    // maximum pages the buffer can have
+    int buffer_pool_size;
+
     // map used to search the index in the `buffer_pool` of a certain page
     std::map<PageId, int> pages;
 
     // array of `BUFFER_POOL_SIZE` pages
     Page* buffer_pool;
+
     // begining of the allocated memory for the pages
     char* bytes;
+
     // simple clock used to page replacement
     int clock_pos;
 
     BufferManager();
     ~BufferManager();
 
-    // returs the index of an unpined page from `buffer_pool`
+    // returns the index of an unpined page from `buffer_pool`
     int get_buffer_available();
 };
 

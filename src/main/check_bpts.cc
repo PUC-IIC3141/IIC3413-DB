@@ -12,6 +12,8 @@
 using namespace std;
 
 int main() {
+    file_manager.init();
+    buffer_manager.init();
     RelationalModel::init();
     auto& graph = RelationalModel::get_graph(GraphId(0));
 

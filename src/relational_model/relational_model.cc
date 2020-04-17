@@ -1,5 +1,8 @@
 #include "relational_model.h"
 
+#include <iostream>
+#include <openssl/md5.h>
+
 #include "base/graph/edge.h"
 #include "base/graph/node.h"
 #include "base/graph/value/value_int.h"
@@ -7,9 +10,6 @@
 #include "base/graph/value/value_float.h"
 #include "base/graph/value/value_string.h"
 #include "relational_model/graph/relational_graph.h"
-
-#include <openssl/md5.h>
-#include <iostream>
 
 using namespace std;
 
@@ -79,7 +79,7 @@ uint64_t RelationalModel::get_or_create_external_id(std::unique_ptr< std::vector
 ObjectId RelationalModel::get_string_unmasked_id(const string& str) {
     int string_len = str.length();
 
-    if (string_len > 7) {
+    if (string_len > MAX_INLINED_BYTES) {
         auto bytes = make_unique<vector<unsigned char>>(string_len);
         copy(str.begin(), str.end(), bytes->begin());
 
@@ -99,7 +99,7 @@ ObjectId RelationalModel::get_string_unmasked_id(const string& str) {
 
 ObjectId RelationalModel::get_value_masked_id(const Value& value) {
     auto obj_bytes = value.get_bytes();
-    if (obj_bytes->size() > 7) { // MAX 7 bytes inlined
+    if (obj_bytes->size() > MAX_INLINED_BYTES) {
         return get_external_id(move(obj_bytes)) | get_value_mask(value);
     }
     else {
@@ -117,7 +117,7 @@ ObjectId RelationalModel::get_value_masked_id(const Value& value) {
 ObjectId RelationalModel::get_or_create_string_unmasked_id(const std::string& str) {
     int string_len = str.length();
 
-    if (string_len > 7) {
+    if (string_len > MAX_INLINED_BYTES) {
         auto bytes = make_unique<vector<unsigned char>>(string_len);
         copy(str.begin(), str.end(), bytes->begin());
 
@@ -137,7 +137,7 @@ ObjectId RelationalModel::get_or_create_string_unmasked_id(const std::string& st
 
 ObjectId RelationalModel::get_or_create_value_masked_id(const Value& value) {
     auto obj_bytes = value.get_bytes();
-    if (obj_bytes->size() > 7) { // MAX 7 bytes inlined
+    if (obj_bytes->size() > MAX_INLINED_BYTES) {
         return get_or_create_external_id(move(obj_bytes)) | get_value_mask(value);
     }
     else {
@@ -153,7 +153,7 @@ ObjectId RelationalModel::get_or_create_value_masked_id(const Value& value) {
 
 
 shared_ptr<GraphObject> RelationalModel::get_graph_object(ObjectId object_id) {
-    auto mask = object_id.id & MASK;
+    auto mask = object_id.id & TYPE_MASK;
 
     if (mask == VALUE_EXTERNAL_STR_MASK) {
         auto bytes = instance->object_file->read(object_id & UNMASK);
@@ -163,7 +163,7 @@ shared_ptr<GraphObject> RelationalModel::get_graph_object(ObjectId object_id) {
     else if (mask == VALUE_INLINE_STR_MASK) {
         string value_string = "";
         int shift_size = 0;
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < MAX_INLINED_BYTES; i++) {
             uint8_t byte = (object_id >> shift_size) & 0xFF;
             if (byte == 0x00) {
                 break;
@@ -171,7 +171,6 @@ shared_ptr<GraphObject> RelationalModel::get_graph_object(ObjectId object_id) {
             value_string.push_back(byte);
             shift_size += 8;
         }
-        // value_string.push_back('\0');
         return make_shared<ValueString>(move(value_string));
     }
     else if (mask == VALUE_INT_MASK) {
@@ -201,10 +200,10 @@ shared_ptr<GraphObject> RelationalModel::get_graph_object(ObjectId object_id) {
         return make_shared<ValueBool>(b);
     }
     else if (mask == NODE_MASK) {
-        return make_shared<Node>(object_id & UNMASK);
+        return make_shared<Node>(object_id);
     }
     else if (mask == EDGE_MASK) {
-        return make_shared<Edge>(object_id & UNMASK);
+        return make_shared<Edge>(object_id);
     }
     else {
         cout << "wrong value prefix:\n";
@@ -213,6 +212,12 @@ shared_ptr<GraphObject> RelationalModel::get_graph_object(ObjectId object_id) {
         string value_string = "";
         return make_shared<ValueString>(move(value_string));
     }
+}
+
+
+RelationalGraph& RelationalModel::create_graph(const std::string& graph_name) {
+    auto graph_id = get_catalog().create_graph(graph_name);
+    return get_graph(graph_id);
 }
 
 
@@ -232,7 +237,7 @@ uint64_t RelationalModel::get_value_mask(const Value& value) {
     auto type = value.type();
     if (type == ObjectType::value_string) {
         const auto& string_value = static_cast<const ValueString&>(value);
-        if (string_value.value.size() < 8) { // 7 bytes availables
+        if (string_value.value.size() <= MAX_INLINED_BYTES) {
             return VALUE_INLINE_STR_MASK;
         }
         else return VALUE_EXTERNAL_STR_MASK;

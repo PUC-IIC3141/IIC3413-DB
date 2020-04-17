@@ -9,13 +9,13 @@
 
 class OpLabel : public Op {
 public:
-    const GraphId graph_id;
+    const std::string graph_name;
     const ObjectType type;
     const std::string var;
     const std::string label;
 
-    OpLabel(GraphId graph_id, ObjectType type, std::string var, std::string label)
-        : graph_id(graph_id), type(type), var(std::move(var)), label(std::move(label)) { }
+    OpLabel(std::string graph_name, ObjectType type, std::string var, std::string label)
+        : graph_name(graph_name), type(type), var(std::move(var)), label(std::move(label)) { }
 
     ~OpLabel() = default;
 
@@ -24,4 +24,4 @@ public:
     }
 };
 
-#endif //BASE__OP_LABEL_H_
+#endif // BASE__OP_LABEL_H_

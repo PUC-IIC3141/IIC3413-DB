@@ -1,0 +1,4 @@
+// Limit must be positive
+SELECT *
+MATCH (?n)
+LIMIT 0

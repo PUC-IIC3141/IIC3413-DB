@@ -21,6 +21,7 @@
 
 #include <fstream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,11 @@
 class FileManager {
 friend class FileManagerInitializer;  // needed to access private constructor
 public:
+    static constexpr auto DEFAULT_DB_FOLDER = "test_files/default_db";
+
+    // must be called before usage
+    void init(std::string db_folder = DEFAULT_DB_FOLDER);
+
     // Get an id for the corresponding file, creating it if it's necessary
     FileId get_file_id(const std::string& filename);
 
@@ -63,8 +69,11 @@ public:
     void read_page(PageId page_id, char* bytes);
 
 private:
+    // folder where all the used files will be
+    std::string db_folder;
+
     // contains all file streams that have been opened, including closed ones
-    std::vector<std::fstream*> opened_files;
+    std::vector< std::unique_ptr<std::fstream> > opened_files;
 
     // contains all filenames that have been used. The position in this vector is equivalent to the FileId
     // representing that file

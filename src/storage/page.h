@@ -30,8 +30,6 @@ public:
     // get page number
     uint_fast32_t get_page_number() const { return page_id.page_number; };
 
-    Page& operator=(const Page& other);
-
 private:
     PageId page_id;                 // contains file_id and page_number of this page
     uint_fast32_t pins;             // count of objects using this page
@@ -41,6 +39,7 @@ private:
     Page();
     Page(PageId page_id, char* bytes);
     ~Page();
+    Page& operator=(const Page& other);
 
      // reduces the count of objects using this page. Only buffer manager should call pin()
     void pin();

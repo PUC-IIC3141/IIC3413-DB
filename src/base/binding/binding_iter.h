@@ -8,6 +8,7 @@
 // Abstract class
 class BindingIter {
 public:
+    virtual ~BindingIter() { };
     virtual void begin() = 0;
     virtual std::unique_ptr<Binding> next() = 0; // next returning nullptr means there are not more bindings
 };

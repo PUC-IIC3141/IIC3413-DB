@@ -17,7 +17,7 @@ public:
 
     int const key_size;
     int const value_size;
-    int const total_size;
+    int const total_size; // total_size = key_size + value_size
 
     int dir_max_records;
     int leaf_max_records;

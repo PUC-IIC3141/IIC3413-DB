@@ -1,0 +1,3 @@
+// Nodes and edges cant share same name
+SELECT *
+MATCH ()-[?e]->(?e)

@@ -56,7 +56,7 @@ void QueryOptimizerLabel::try_assign_var(VarId var_id) {
 }
 
 
-unique_ptr<GraphScan> QueryOptimizerLabel::get_scan() {
+unique_ptr<BindingIdIter> QueryOptimizerLabel::get_scan() {
     vector<pair<ObjectId, int>> terms;
     vector<pair<VarId, int>> vars;
 
@@ -69,20 +69,24 @@ unique_ptr<GraphScan> QueryOptimizerLabel::get_scan() {
         }
         vars.push_back(make_pair(element_var_id, 1));
         if (element_type == ObjectType::node) {
-            return make_unique<GraphScan>(*RelationalModel::get_graph(graph_id).label2node, std::move(terms), std::move(vars));
+            return make_unique<GraphScan>(graph_id, *RelationalModel::get_graph(graph_id).label2node,
+                                          move(terms), move(vars));
         }
         else { // if (element_type == ObjectType::edge)
-            return make_unique<GraphScan>(*RelationalModel::get_graph(graph_id).label2edge, std::move(terms), std::move(vars));
+            return make_unique<GraphScan>(graph_id, *RelationalModel::get_graph(graph_id).label2edge,
+                                          move(terms), move(vars));
         }
     }
     else { // Label(?,?) or Label(_,?)
         vars.push_back(make_pair(element_var_id, 0));
         vars.push_back(make_pair(label_var_id, 1));
         if (element_type == ObjectType::node) {
-            return make_unique<GraphScan>(*RelationalModel::get_graph(graph_id).node2label, std::move(terms), std::move(vars));
+            return make_unique<GraphScan>(graph_id, *RelationalModel::get_graph(graph_id).node2label,
+                                          move(terms), move(vars));
         }
         else { // if (element_type == ObjectType::edge)
-            return make_unique<GraphScan>(*RelationalModel::get_graph(graph_id).edge2label, std::move(terms), std::move(vars));
+            return make_unique<GraphScan>(graph_id, *RelationalModel::get_graph(graph_id).edge2label,
+                                          move(terms), move(vars));
         }
     }
 }

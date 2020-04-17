@@ -6,6 +6,7 @@
 class ValueAssignConstant : public ValueAssign {
 private:
     std::shared_ptr<GraphObject> value;
+
 public:
     ValueAssignConstant(std::unique_ptr<Value> value)
         : value(std::move(value)) { }
@@ -14,6 +15,8 @@ public:
     std::shared_ptr<GraphObject> get_value(Binding&) {
         return value;
     }
+
+    void check_names(std::map<std::string, ObjectType>&) { }
 };
 
 #endif //BASE__VALUE_ASSIGN_CONSTANT_H_

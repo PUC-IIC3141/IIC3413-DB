@@ -2,6 +2,7 @@ Label: ElementId, string
 Property: ElementId, string(key), string(value)
 Connection: ElementId(From), ElementId(Edge), ElementId(To)
 
+
 Property(_,_,?)         11
 Label(_,?)              10
 Connection(_,?,_)       9
@@ -13,6 +14,7 @@ Property(?,_,?)         4
 Connection(?,?,?)       3
 Label(?,?)              2
 Property(?,?,?)         1
+Lonely_node             0
 
 Connection(_,_,?) X
 Connection(?,_,?) X

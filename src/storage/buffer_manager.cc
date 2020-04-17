@@ -15,24 +15,39 @@ BufferManager& buffer_manager = reinterpret_cast<BufferManager&> (buffer_manager
 using namespace std;
 
 BufferManager::BufferManager() {
-    buffer_pool = new Page[BUFFER_POOL_SIZE];
-    clock_pos = 0;
-    bytes = new char[BUFFER_POOL_SIZE*PAGE_SIZE];
+    buffer_pool = nullptr;
+    bytes = nullptr;
 }
 
 
 BufferManager::~BufferManager() {
     // It's not necessary to delete buffer_pool or bytes,
     // this destructor is called only on program exit.
-    cout << "~BufferManager()\n";
+}
+
+void BufferManager::init(int _buffer_pool_size) {
+    buffer_pool_size = _buffer_pool_size;
+    buffer_pool = new Page[buffer_pool_size];
+    clock_pos = 0;
+    bytes = new char[buffer_pool_size*PAGE_SIZE];
 }
 
 
 void BufferManager::flush() {
-    cout << "flushing buffer manager\n";
-    for (int i = 0; i < BUFFER_POOL_SIZE; i++) {
+    // flush() is always called at FileManager destruction.
+    // this is important to check to avoid segfault when program terminates before calling init()
+    // for instance, when bad parameters are received
+    if (buffer_pool == nullptr) {
+        return;
+    }
+    for (int i = 0; i < buffer_pool_size; i++) {
         buffer_pool[i].flush();
     }
+}
+
+
+Page& BufferManager::get_last_page(FileId file_id) {
+    return get_page(file_id, file_manager.count_pages(file_id)-1); // TODO: manejar caso que no existe
 }
 
 
@@ -44,19 +59,19 @@ Page& BufferManager::append_page(FileId file_id) {
 int BufferManager::get_buffer_available() {
     int first_lookup = clock_pos;
     while (buffer_pool[clock_pos].pins != 0) {
-        clock_pos = (clock_pos+1)%BUFFER_POOL_SIZE;
+        clock_pos = (clock_pos+1)%buffer_pool_size;
         if (clock_pos == first_lookup) {
-            throw std::logic_error("No buffer available.");
+            throw std::runtime_error("No buffer available in buffer pool.");
         }
     }
     int res = clock_pos;
-    clock_pos = (clock_pos+1)%BUFFER_POOL_SIZE;
+    clock_pos = (clock_pos+1)%buffer_pool_size;
     return res;
 }
 
 
 Page& BufferManager::get_page(FileId file_id, uint_fast32_t page_number) {
-    if (page_number != 0 && file_manager.count_pages(file_id) < page_number) {
+    if (file_manager.count_pages(file_id) < page_number) {
         std::cout << "Page Number: " << page_number << ", FileId: " << file_id.id << "(" << file_manager.get_filename(file_id) <<  ")\n";
         throw std::logic_error("getting wrong page_number.");
     }

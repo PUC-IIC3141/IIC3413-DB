@@ -6,14 +6,19 @@
 #include "storage/index/bplus_tree/bplus_tree_leaf.h"
 #include "storage/index/bplus_tree/bplus_tree_params.h"
 #include "relational_model/binding/binding_id.h"
+#include "relational_model/relational_model.h"
 
 #include <iostream>
 #include <vector>
 
 using namespace std;
 
-GraphScan::GraphScan(BPlusTree& bpt, vector<pair<ObjectId, int>> terms, vector<pair<VarId, int>> vars)
-    : record_size(bpt.params->total_size), bpt(bpt), terms(move(terms)), vars(move(vars)) { }
+GraphScan::GraphScan(GraphId graph_id, BPlusTree& bpt, vector<pair<ObjectId, int>> terms,
+                     vector<pair<VarId, int>> vars)
+    : record_size(bpt.params->total_size), bpt(bpt), terms(move(terms)), vars(move(vars))
+{
+    graph_mask = graph_id << RelationalModel::GRAPH_OFFSET;
+}
 
 
 void GraphScan::begin(BindingId& input) {
@@ -24,13 +29,13 @@ void GraphScan::begin(BindingId& input) {
     vector<uint64_t> max_ids(record_size);
 
     for (int i = 0; i < record_size; i++) {
-        min_ids[i] = 0;
-        max_ids[i] = UINT64_MAX;
+        min_ids[i] = graph_mask;
+        max_ids[i] = 0x0000'FF'FFFFFFFFFFUL | graph_mask;
     }
 
     for (auto& term : terms) {
-        min_ids[term.second] = term.first;
-        max_ids[term.second] = term.first;
+        min_ids[term.second] = term.first | graph_mask;
+        max_ids[term.second] = term.first | graph_mask;
     }
 
     for (auto& var : vars) {
@@ -39,8 +44,8 @@ void GraphScan::begin(BindingId& input) {
             break;
         }
         else {
-            min_ids[var.second] = obj_id;
-            max_ids[var.second] = obj_id;
+            min_ids[var.second] = obj_id | graph_mask;
+            max_ids[var.second] = obj_id | graph_mask;
         }
     }
 

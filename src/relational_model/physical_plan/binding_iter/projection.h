@@ -10,13 +10,15 @@
 class Projection : public BindingIter {
 
 private:
+    uint_fast32_t limit;
+    uint_fast32_t count;
+    const bool select_all;
     std::unique_ptr<BindingIter> iter;
     std::set<std::string> projection_vars;
-    const bool select_all;
 
 public:
-    Projection(std::unique_ptr<BindingIter> iter); // constructor for select *
-    Projection(std::unique_ptr<BindingIter> iter, std::set<std::string> projection_vars);
+    Projection(std::unique_ptr<BindingIter> iter, uint_fast32_t limit); // constructor for select *
+    Projection(std::unique_ptr<BindingIter> iter, std::set<std::string> projection_vars, uint_fast32_t limit);
     ~Projection();
 
     void begin();

@@ -15,9 +15,12 @@ using namespace std;
 BPlusTreeDir::BPlusTreeDir(const BPlusTreeParams& params, Page& page)
     : params(params), page(page)
 {
-    key_count = (int*) page.get_bytes();
-    keys      = (uint64_t*) (page.get_bytes() + sizeof(int));
-    children  = (int*) (page.get_bytes() + sizeof(int) + (sizeof(uint64_t)*params.dir_max_records*params.key_size) );
+    key_count = reinterpret_cast<int*>(page.get_bytes());
+    keys      = reinterpret_cast<uint64_t*>(page.get_bytes()
+                                            + sizeof(int));
+    children  = reinterpret_cast<int*>(page.get_bytes()
+                                       + sizeof(int)
+                                       + (sizeof(uint64_t) * params.dir_max_records * params.key_size));
 }
 
 

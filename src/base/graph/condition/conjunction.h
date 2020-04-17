@@ -32,6 +32,11 @@ public:
         conditions.push_back(std::move(condition));
     }
 
+    void check_names(std::map<std::string, ObjectType>& m) {
+        for (auto& condition : conditions) {
+            condition->check_names(m);
+        }
+    }
 };
 
 #endif //BASE__COJUNCTION_H_

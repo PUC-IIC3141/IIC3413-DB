@@ -32,6 +32,8 @@ public:
         }
      }
 
+    virtual ~Comparison() { };
+
     virtual bool compare(GraphObject& lhs, GraphObject& rhs) = 0;
 
     bool eval(Binding& binding) {
@@ -49,6 +51,11 @@ public:
 
     ConditionType type() {
         return ConditionType::comparison;
+    }
+
+    void check_names(std::map<std::string, ObjectType>& m) {
+        lhs->check_names(m);
+        rhs->check_names(m);
     }
 };
 

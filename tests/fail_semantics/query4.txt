@@ -1,0 +1,4 @@
+// Edges from different graphs can't have same name
+SELECT *
+MATCH ()-[?e]->() ON "graph1",
+      ()<-[?e]-() ON "graph2"

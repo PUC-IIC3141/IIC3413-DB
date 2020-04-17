@@ -6,11 +6,11 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 
 BOOST_FUSION_ADAPT_STRUCT(ast::Root,
-    selection, graph_pattern, where
+    explain, selection, graph_pattern, where, limit
 )
 
 BOOST_FUSION_ADAPT_STRUCT(ast::LinearPattern,
-    graph_id, root, path
+    root, path, graph_name
 )
 
 BOOST_FUSION_ADAPT_STRUCT(ast::StepPath,

@@ -18,19 +18,25 @@ static typename std::aligned_storage<sizeof (FileManager), alignof (FileManager)
     file_manager_buf; // memory for the object
 FileManager& file_manager = reinterpret_cast<FileManager&> (file_manager_buf);
 
-FileManager::FileManager() {
+FileManager::FileManager() { }
+
+
+void FileManager::init(std::string _db_folder) {
+    db_folder = _db_folder;
+    if (experimental::filesystem::exists(db_folder)) {
+        if (!experimental::filesystem::is_directory(db_folder)) {
+            throw std::runtime_error("Cannot create database directory: \"" + db_folder +
+                                     "\", a file with that name already exists.");
+        }
+    }
+    else {
+        experimental::filesystem::create_directories(db_folder);
+    }
 }
 
 
 FileManager::~FileManager() {
-    cout << "~FileManager()\n";
-
     buffer_manager.flush();
-    for (auto file : opened_files) {
-        if (file->is_open()) {
-            file->close();
-        }
-    }
 }
 
 
@@ -107,7 +113,9 @@ fstream& FileManager::get_file(FileId file_id) {
 
 
 FileId FileManager::get_file_id(const string& filename) {
-    string file_path = "test_files/" + filename; // TODO: get folder path by config and/or graph?
+    string file_path = db_folder + "/" + filename;
+    // TODO: si el modelo cambiara y se necesitaran tener muchos archivos
+    // distintos, hay que cambiar la busqueda para que sea O(log n)
     for (size_t i = 0; i < filenames.size(); i++) {
         if (file_path.compare(filenames[i]) == 0) {
             return FileId(i);
@@ -115,13 +123,16 @@ FileId FileManager::get_file_id(const string& filename) {
     }
 
     filenames.push_back(file_path);
-    fstream* file = new fstream();
+    auto file = make_unique<fstream>();
     if (!experimental::filesystem::exists(file_path)) {
         file->open(file_path, ios::out|ios::app);
+        if (file->fail()) {
+            throw std::runtime_error("Could not open file " + file_path);
+        }
         file->close();
     }
     file->open(file_path, ios::in|ios::out|ios::binary);
-    opened_files.push_back(file);
+    opened_files.push_back(move(file));
 
     return FileId(filenames.size()-1);
 }

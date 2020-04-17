@@ -17,6 +17,8 @@ public:
     ConditionType type() {
         return ConditionType::constant;
     }
+
+    void check_names(std::map<std::string, ObjectType>& ) { }
 };
 
 #endif //BASE__CONSTANT_CONDITION_H_

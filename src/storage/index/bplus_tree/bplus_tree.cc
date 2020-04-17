@@ -23,20 +23,34 @@ BPlusTree::BPlusTree(unique_ptr<BPlusTreeParams> _params)
 
 void BPlusTree::bulk_import(OrderedFile& ordered_file) {
     ordered_file.begin_iter();
-    // first leaf
-    auto first_leaf = BPlusTreeLeaf(*params, buffer_manager.get_page(params->leaf_file_id, 0));
-    *first_leaf.value_count = ordered_file.next_tuples(first_leaf.records, params->leaf_max_records);
-    // root.dirs[0] = 0;
-    // cout << *first_leaf.count << "\n";
-    int next_page_number = 1;
-    if (ordered_file.has_more_tuples()) {
-        *first_leaf.next_leaf = next_page_number;
+
+    if (is_empty) {
+        // first leaf
+        auto first_leaf = BPlusTreeLeaf(*params, buffer_manager.get_page(params->leaf_file_id, 0));
+        *first_leaf.value_count = ordered_file.next_tuples(first_leaf.records, params->leaf_max_records);
+        // root.dirs[0] = 0;
+        if (ordered_file.has_more_tuples()) {
+            *first_leaf.next_leaf = first_leaf.page.get_page_number() + 1;
+        }
+        first_leaf.page.make_dirty();
+        is_empty = false;
     }
-    first_leaf.page.make_dirty();
+    else {
+        // fill last page
+        auto last_leaf = BPlusTreeLeaf(*params, buffer_manager.get_last_page(params->leaf_file_id));
+        if (*last_leaf.value_count < params->leaf_max_records) {
+            auto new_tuples = ordered_file.next_tuples(&last_leaf.records[*last_leaf.value_count * params->total_size],
+                                                       params->leaf_max_records - *last_leaf.value_count);
+            *last_leaf.value_count += new_tuples;
+        }
+        if (ordered_file.has_more_tuples()) {
+            *last_leaf.next_leaf = last_leaf.page.get_page_number() + 1;
+        }
+        last_leaf.page.make_dirty();
+    }
 
     while (ordered_file.has_more_tuples()) {
-
-        auto new_leaf = BPlusTreeLeaf(*params, buffer_manager.get_page(params->leaf_file_id, next_page_number));
+        auto new_leaf = BPlusTreeLeaf(*params, buffer_manager.append_page(params->leaf_file_id));
         *new_leaf.value_count = ordered_file.next_tuples(new_leaf.records, params->leaf_max_records);
 
         if (*new_leaf.value_count <= 0) {
@@ -44,7 +58,7 @@ void BPlusTree::bulk_import(OrderedFile& ordered_file) {
         }
 
         if (ordered_file.has_more_tuples()) {
-            *new_leaf.next_leaf = ++next_page_number;
+            *new_leaf.next_leaf = new_leaf.page.get_page_number() + 1;
         }
         root->bulk_insert(new_leaf);
         new_leaf.page.make_dirty();
@@ -76,6 +90,7 @@ void BPlusTree::insert(const Record& key, const Record& value) {
     }
     root->insert(key, value);
 }
+
 
 // Insert first key at root, create leaf
 void BPlusTree::create_new(const Record& key, const Record& value) {

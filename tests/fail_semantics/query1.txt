@@ -1,0 +1,4 @@
+// Variables present in WHERE need to exists
+SELECT *
+MATCH (?n :Label1)
+WHERE ?m.name == "John"

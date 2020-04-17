@@ -24,7 +24,6 @@ void Match::begin() {
 
 
 unique_ptr<Binding> Match::next() {
-
     auto binding_id_ptr = root->next();
     if (binding_id_ptr != nullptr) {
         auto binding_id_copy = make_unique<BindingId>(*binding_id_ptr);
@@ -37,7 +36,6 @@ unique_ptr<Binding> Match::next() {
 
 
 unique_ptr<BindingIdIter> Match::get_join_plan() {
-
     unique_ptr<BindingIdIter> current_root = nullptr;
 
     auto elements_size = elements.size();
