@@ -9,11 +9,11 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY bin)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Og -g3 -pthread")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 -g0 -pthread")
-
 # set the project name and version
 project(GraphDB VERSION 0.1)
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Og -g3 -pthread")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Wextra -O3 -g0 -pthread")
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
