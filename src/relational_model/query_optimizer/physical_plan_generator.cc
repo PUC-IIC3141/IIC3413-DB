@@ -63,7 +63,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
 
     // Process Labels
     for (auto& op_label : op_match.labels) {
-        auto graph_id = graph_ids[op_label->graph_name];
+        auto graph_id = search_graph_id(op_label->graph_name);
         auto element_var_id = get_var_id(op_label->var);
         auto label_id = RelationalModel::get_string_unmasked_id(op_label->label);
         elements.push_back(
@@ -77,7 +77,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
         auto key_id = RelationalModel::get_string_unmasked_id(op_property->key);
         ObjectId value_id = get_value_id(op_property->value);
 
-        auto graph_id = graph_ids[op_property->graph_name];
+        auto graph_id = search_graph_id(op_property->graph_name);
         elements.push_back(make_unique<QueryOptimizerProperty>(
             graph_id, element_var_id, null_var, null_var, op_property->type, key_id, value_id ));
     }
@@ -104,7 +104,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
             }
         }
         if (!lonely_node_mentioned_int_select) {
-            auto graph_id = graph_ids[lonely_node->graph_name];
+            auto graph_id = search_graph_id(lonely_node->graph_name);
             auto element_var_id = get_var_id(lonely_node->var);
             elements.push_back(
                 make_unique<QueryOptimizerLonelyNode>(graph_id, element_var_id)
@@ -114,7 +114,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
 
     // Process connections
     for (auto& op_connection : op_match.connections) {
-        auto graph_id = graph_ids[op_connection->graph_name];
+        auto graph_id = search_graph_id(op_connection->graph_name);
 
         auto node_from_var_id = get_var_id(op_connection->node_from);
         auto node_to_var_id   = get_var_id(op_connection->node_to);
@@ -170,6 +170,17 @@ ObjectId PhysicalPlanGenerator::get_value_id(const ast::Value& value) {
     }
     else {
         throw logic_error("Unknown value type.");
+    }
+}
+
+
+GraphId PhysicalPlanGenerator::search_graph_id(const std::string& graph_name) {
+    auto search = graph_ids.find(graph_name);
+    if (search != graph_ids.end()) {
+        return search->second;
+    } else {
+        throw logic_error("graph_ids does not contain graph \"" + graph_name
+            + "\", graph_ids should contain all graph names, non-existing graphs should be checked before.");
     }
 }
 

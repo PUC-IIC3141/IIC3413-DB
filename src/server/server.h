@@ -10,6 +10,7 @@ namespace db_server {
         end_fail       = 0x02,
     };
 
+    constexpr auto DEFAULT_PORT = 8080;
     constexpr auto BUFFER_SIZE = 2048;
     constexpr auto BYTES_FOR_QUERY_LENGTH = 4;
 }

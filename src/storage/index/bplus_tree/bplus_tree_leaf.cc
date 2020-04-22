@@ -16,7 +16,7 @@ BPlusTreeLeaf::BPlusTreeLeaf(const BPlusTreeParams& params, Page& page)
 
 
 BPlusTreeLeaf::~BPlusTreeLeaf() {
-    page.unpin();
+    buffer_manager.unpin(page);
 }
 
 

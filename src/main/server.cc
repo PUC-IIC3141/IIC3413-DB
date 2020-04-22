@@ -1,3 +1,21 @@
+/*
+ * server is a executable that listens for tcp conections asking for queries,
+ * and it send the results to the client.
+ *
+ * There are 3 methods:
+ *
+ * 1) main: parses the program options (e.g: buffer size, port, database folder).
+ *    Then initialize the `file_manager`, `buffer_manager` and the `RelationalModel`
+ *    calls the method `server` to start the server.
+ *
+ * 2) server: infinite loop, waiting for a new TCP connection. When a connection
+ *    is established, it calls the `session` method in a different thread, and the loop
+ *    starts again in the main thread, waiting for another connection.
+ *
+ * 3) session: executes the query and send the result to the client via TcpBuffer,
+ *    who might break the result into multiple tcp messages.
+ */
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -16,8 +34,9 @@
 #include "relational_model/graph/relational_graph.h"
 #include "relational_model/query_optimizer/physical_plan_generator.h"
 #include "relational_model/relational_model.h"
-#include "server/tcp_buffer.h"
 #include "storage/buffer_manager.h"
+#include "storage/file_manager.h"
+#include "server/tcp_buffer.h"
 
 using namespace std;
 using boost::asio::ip::tcp;
@@ -44,17 +63,21 @@ void session(tcp::socket sock) {
         // start timer
         auto start = chrono::system_clock::now();
         try {
+            // get logical plan
             auto select_plan = Op::get_select_plan(query);
 
+            // get physical plan
             PhysicalPlanGenerator plan_generator { };
             auto root = plan_generator.exec(*select_plan);
 
+            // prepare to start the execution
             root->begin();
+
+            // get all results
             auto binding = root->next();
             int count = 0;
             while (binding != nullptr) {
                 tcp_buffer << binding->to_string();
-                // cout << binding->to_string();
                 binding = root->next();
                 count++;
             }
@@ -87,6 +110,7 @@ void server(boost::asio::io_service& io_service, unsigned short port) {
 
 
 int main(int argc, char **argv) {
+    int port;
     try {
         // Parse arguments
         po::options_description desc("Allowed options");
@@ -94,6 +118,7 @@ int main(int argc, char **argv) {
             ("help,h", "show this help message")
             ("db-folder,d", po::value<string>()->required(), "set database folder path")
             ("buffer-size,b", po::value<int>(), "set buffer pool size")
+            ("port,p", po::value<int>(&port)->default_value(db_server::DEFAULT_PORT), "database server port")
         ;
 
         po::positional_options_description p;
@@ -121,7 +146,7 @@ int main(int argc, char **argv) {
         boost::asio::io_service io_service;
         boost::asio::deadline_timer t(io_service, boost::posix_time::seconds(5));
 
-        server(io_service, 8080); // TODO: make port as param and define DEFAULT port
+        server(io_service, port);
     }
     catch(exception& e) {
         cerr << "Exception: " << e.what() << "\n";

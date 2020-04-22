@@ -45,6 +45,8 @@ public:
 
     GraphId create_graph(const std::string& graph_name);
 
+    void print();
+
 private:
     std::fstream& file;
     uint32_t graph_count;

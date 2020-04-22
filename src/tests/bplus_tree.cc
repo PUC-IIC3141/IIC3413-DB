@@ -4,6 +4,9 @@
 #include "storage/index/bplus_tree/bplus_tree.h"
 #include "storage/index/bplus_tree/bplus_tree_params.h"
 
+#include "storage/file_manager.h"
+#include "storage/buffer_manager.h"
+
 using namespace std;
 
 void create_ascending(int size, std::string& bpt_name) {
@@ -86,7 +89,8 @@ int test_order(std::string& bpt_name) {
         i++;
         if (*y <= *x) {
             std::cout << "error en el orden de la tuplas " << (i-1) << " y " << (i) << "\n";
-            std::cout << "  (" << x->ids[0] << ", " << x->ids[1] << ", " << x->ids[2] << ")\n  (" << y->ids[0] << ", " << y->ids[1] << ", " << y->ids[2] << ")\n";
+            std::cout << "  (" << x->ids[0] << ", " << x->ids[1] << ", " << x->ids[2] << ")\n  ("
+                      << y->ids[0] << ", " << y->ids[1] << ", " << y->ids[2] << ")\n";
             error = true;
         }
 		x = std::move(y);
@@ -101,16 +105,26 @@ int test_order(std::string& bpt_name) {
     }
 }
 
+// Ojo al ejecutar 2 veces seguidas el test, dará error por intentar ejecutar keys duplicadas
+// deben borrar los archivos creados antes de ejecutarlo de nuevo
 int main(int argc, char** argv) {
     if (argc < 2) {
         std::cout << "needed size\n";
         exit(1);
     }
     int size = atoi(argv[1]);
+    file_manager.init("test_files/test_bpt");
+    buffer_manager.init();
 
     string name_random = "bpt_random";
     create_random(size, name_random);
+
+    // string name_ascending = "bpt_ascending";
+    // create_ascending(size, name_ascending);
+
+    // string name_descending = "bpt_descending";
+    // create_descending(size, name_descending);
+
+    // return test_order(name_random) || test_order(name_ascending) || test_order(name_descending);
     return test_order(name_random);
-    // string name = "bpt_descending";
-    // create_descending(size, name);
 }

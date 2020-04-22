@@ -1,3 +1,17 @@
+/*
+ * query is a executable that takes a file with the query, send it to the server via TCP socket
+ * and print the result received.
+ *
+ * Program Flow is:
+ * - read file to a string
+ * - connect to server via TCP socket
+ * - send query length
+ * - send query
+ * - listen to results and print them. Results may come in many packages of a fixed size: `db_server::BUFFER_SIZE`
+ *     - first byte indicates the state (not finished, finished successfully or finished with errors.
+ *     - next 2 bytes indicates the length of the message (needed because `db_server::BUFFER_SIZE`
+ *       bytes must be sent even if the message is shorter).
+ */
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -21,7 +35,7 @@ int main(int argc, char **argv) {
         desc.add_options()
             ("help", "show this help message")
             ("host,h", po::value<string>(&host)->default_value("127.0.0.1"), "database server host")
-            ("port,p", po::value<int>(&port)->default_value(8080), "database server port")
+            ("port,p", po::value<int>(&port)->default_value(db_server::DEFAULT_PORT), "database server port")
             ("query-file,q", po::value<string>(&query_file)->required(), "query file")
         ;
 
@@ -52,7 +66,7 @@ int main(int argc, char **argv) {
 
         tcp::socket s(io_service);
         tcp::resolver resolver(io_service);
-        boost::asio::connect(s, resolver.resolve({host, std::to_string(port)})); // TODO: port como string?
+        boost::asio::connect(s, resolver.resolve({host, std::to_string(port)}));
 
         // Send Query
         auto query_length = query.size();

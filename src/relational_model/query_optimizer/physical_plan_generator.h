@@ -30,6 +30,7 @@ private:
 
     VarId get_var_id(const std::string& var_name);
     ObjectId get_value_id(const ast::Value& value);
+    GraphId search_graph_id(const std::string& graph_name);
 
 public:
     PhysicalPlanGenerator();

@@ -1,6 +1,9 @@
 #include "page.h"
 
+#include <cassert>
+
 #include "storage/file_id.h"
+#include "storage/file_manager.h"
 
 Page::Page(PageId page_id, char* bytes)
     : page_id(page_id), pins(1), bytes(bytes), dirty(false) { }
@@ -14,6 +17,7 @@ Page::~Page() = default;
 
 
 Page& Page::operator=(const Page& other) {
+    assert(pins == 0 && "Cannor reassign page if it is pinned");
     this->flush();
     this->page_id = other.page_id;
     this->pins    = other.pins;
@@ -23,21 +27,8 @@ Page& Page::operator=(const Page& other) {
 }
 
 
-void Page::unpin() {
-    if (pins == 0) {
-        throw std::logic_error("Inconsistent unpin when pins == 0");
-    }
-    pins--;
-}
-
-
 void Page::make_dirty() {
     dirty = true;
-}
-
-
-void Page::pin() {
-    pins++;
 }
 
 

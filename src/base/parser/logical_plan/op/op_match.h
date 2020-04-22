@@ -62,6 +62,8 @@ public:
         std::string var_name;
         if (node.var.empty()) {
             var_name = "_n" + std::to_string(anonymous_var_count++);
+            var_name2graph_name.insert({ var_name, graph_name });
+            var_name2type.insert({ var_name, ObjectType::node });
         }
         else {
             var_name = node.var;
@@ -105,6 +107,8 @@ public:
         std::string var_name;
         if (edge.var.empty()) {
             var_name = "_e" + std::to_string(anonymous_var_count++);
+            var_name2graph_name.insert({ var_name, graph_name });
+            var_name2type.insert({ var_name, ObjectType::edge });
         }
         else {
             var_name = edge.var;

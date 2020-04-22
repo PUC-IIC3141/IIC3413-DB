@@ -175,6 +175,19 @@ void Catalog::save_changes(){
 }
 
 
+void Catalog::print() {
+    for (uint32_t graph = 0; graph < graph_count; graph++) {
+        cout << "Graph " << graph << ": \"" << graph_names[graph] << "\"" << endl;
+        cout << "  node count: " << node_count[graph] << endl;
+        cout << "  edge count: " << edge_count[graph] << endl;
+        cout << "  node disinct labels: " << node_label_count[graph] << endl;
+        cout << "  edge disinct labels: " << edge_label_count[graph] << endl;
+        cout << "  node disinct keys:   " << node_key_count[graph] << endl;
+        cout << "  edge disinct keys:   " << edge_key_count[graph] << endl;
+    }
+}
+
+
 uint64_t Catalog::read_uint64() {
     uint64_t res;
     file.read((char*)&res, 8);

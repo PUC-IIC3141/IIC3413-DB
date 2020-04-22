@@ -25,7 +25,7 @@ BPlusTreeDir::BPlusTreeDir(const BPlusTreeParams& params, Page& page)
 
 
 BPlusTreeDir::~BPlusTreeDir() {
-    page.unpin();
+    buffer_manager.unpin(page);
 }
 
 
