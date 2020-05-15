@@ -38,10 +38,10 @@ public:
 
     static void init();
 
-    static ObjectId get_string_unmasked_id(const std::string& str);
+    static ObjectId get_string_id(const std::string& str);
     static ObjectId get_value_masked_id(const Value& value);
 
-    static ObjectId get_or_create_string_unmasked_id(const std::string& str);
+    static ObjectId get_or_create_string_id(const std::string& str);
     static ObjectId get_or_create_value_masked_id(const Value& value);
 
     static RelationalGraph& create_graph(const std::string& graph_name);

@@ -33,7 +33,7 @@ std::shared_ptr<GraphObject> BindingFilter::get(const std::string& var, const st
     else { // no esta en el cache ni el el binding original
         auto graph_id = var2graph_id[var];
         auto element_type = element_types[var];
-        auto key_object_id = RelationalModel::get_string_unmasked_id(key);
+        auto key_object_id = RelationalModel::get_string_id(key);
         auto var_value = binding[var];
         auto graph_mask = graph_id << RelationalModel::GRAPH_OFFSET;
 

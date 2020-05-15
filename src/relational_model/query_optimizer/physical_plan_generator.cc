@@ -65,7 +65,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
     for (auto& op_label : op_match.labels) {
         auto graph_id = search_graph_id(op_label->graph_name);
         auto element_var_id = get_var_id(op_label->var);
-        auto label_id = RelationalModel::get_string_unmasked_id(op_label->label);
+        auto label_id = RelationalModel::get_string_id(op_label->label);
         elements.push_back(
             make_unique<QueryOptimizerLabel>(graph_id, element_var_id, null_var, op_label->type, label_id)
         );
@@ -74,7 +74,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
     // Process properties from Match
     for (auto& op_property : op_match.properties) {
         auto element_var_id = get_var_id(op_property->var);
-        auto key_id = RelationalModel::get_string_unmasked_id(op_property->key);
+        auto key_id = RelationalModel::get_string_id(op_property->key);
         ObjectId value_id = get_value_id(op_property->value);
 
         auto graph_id = search_graph_id(op_property->graph_name);
@@ -87,7 +87,7 @@ void PhysicalPlanGenerator::visit(OpMatch& op_match) {
         auto graph_id = var2graph_id[var];
         auto element_var_id = get_var_id(var);
         auto value_var = get_var_id(var + '.' + key);
-        auto key_id = RelationalModel::get_string_unmasked_id(key);
+        auto key_id = RelationalModel::get_string_id(key);
         auto element_type = element_types[var];
 
         elements.push_back(make_unique<QueryOptimizerProperty>(

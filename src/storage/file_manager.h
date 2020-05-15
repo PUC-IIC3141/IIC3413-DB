@@ -72,6 +72,9 @@ public:
     void read_page(PageId page_id, char* bytes);
 
 private:
+    // counter for temporary files
+    int tmp_count = 0;
+
     // folder where all the used files will be
     std::string db_folder;
 

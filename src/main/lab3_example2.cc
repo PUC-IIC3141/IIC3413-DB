@@ -3,8 +3,7 @@
 #include "relational_model/physical_plan/binding_iter/match.h"
 #include "relational_model/physical_plan/binding_iter/projection.h"
 
-#include "relational_model/physical_plan/binding_id_iter/graph_scan.h"
-#include "relational_model/physical_plan/binding_id_iter/index_nested_loop_join.h"
+#include "relational_model/physical_plan/binding_id_iter/total_scan.h"
 
 #include "relational_model/graph/relational_graph.h"
 #include "relational_model/relational_model.h"
@@ -14,55 +13,37 @@
 using namespace std;
 
 /*
-    manually creates the plan for the query:
-    SELECT ?n.name
-    MATCH (?n :Person)
+    manually creates the plan for a query that select all triples (NodeId, KeyId, ValueId)
 */
 unique_ptr<BindingIdIter> get_binding_id_iter() {
     auto graph_id = GraphId(0);
     auto& graph = RelationalModel::get_graph(graph_id);
 
-    // Define Scan 1
-    // Using B+Tree `label2node` with tuples (LabelId, NodeId) to select all nodes with the label Person
-    auto label_id = RelationalModel::get_string_id("Person");
-    std::vector<std::pair<ObjectId, int>> scan1_terms = {
-        { label_id, 0 }
-    };
+    // Using B+Tree with tuples (NodeId, KeyId, ValueId) => node2prop
     std::vector<std::pair<VarId, int>> scan1_vars = {
-        { VarId(0), 1 } // VarId(0) => ?n
-    };
-    auto scan1 = make_unique<GraphScan>(graph_id, *graph.label2node, scan1_terms, scan1_vars);
-
-    // Define Scan 2
-    // Using B+Tree `node2prop` with tuples (NodeId, KeyId, ValueId) to select all values from a certain nodeId and KeyId = "name"
-    auto key_id = RelationalModel::get_string_id("name");
-    std::vector<std::pair<ObjectId, int>> scan2_terms = {
-        { key_id, 1 }
-    };
-    std::vector<std::pair<VarId, int>> scan2_vars = {
         { VarId(0), 0 }, // VarId(0) => ?n
-        { VarId(1), 2 }  // VarId(1) => ?n.name
+        { VarId(1), 1 }, // VarId(1) => n.key
+        { VarId(2), 2 }  // VarId(2) => n.value
     };
-    auto scan2 = make_unique<GraphScan>(graph_id, *graph.node2prop, scan2_terms, scan2_vars);
-
-    // // return Index Nested Loop Join between scan1 and scan2
-    return make_unique<IndexNestedLoopJoin>(move(scan1), move(scan2));
+    return make_unique<TotalScan>(*graph.node2prop, scan1_vars);
 }
 
 
 unique_ptr<BindingIter> get_binding_iter() {
     // Es necesario al definir var_pos que el minimo VarId es 0 y el máximo es (var_pos.size() - 1)
     std::map<std::string, VarId> var_pos = {
-        { "?n.name", VarId(1) },
-        { "?n", VarId(0) }
+        { "?n", VarId(0) },
+        { "n.key", VarId(1) },
+        { "n.value", VarId(2) }
     };
     auto match = make_unique<Match>(get_binding_id_iter(), var_pos);
 
     std::set<std::string> projection_vars {
         "?n",
-        "?n.name"
+        "n.key",
+        "n.value"
     };
-    return make_unique<Projection>(move(match), projection_vars, 0); // 0 means no LIMIT
+    return make_unique<Projection>(move(match), projection_vars, 300); // LIMIT 300
 }
 
 

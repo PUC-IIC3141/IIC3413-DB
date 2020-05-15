@@ -77,14 +77,14 @@ uint64_t RelationalModel::get_or_create_external_id(std::unique_ptr< std::vector
 }
 
 
-ObjectId RelationalModel::get_string_unmasked_id(const string& str) {
+ObjectId RelationalModel::get_string_id(const string& str) {
     int string_len = str.length();
 
     if (string_len > MAX_INLINED_BYTES) {
         auto bytes = make_unique<vector<unsigned char>>(string_len);
         copy(str.begin(), str.end(), bytes->begin());
 
-        return ObjectId( get_external_id(move(bytes)) );
+        return ObjectId( get_external_id(move(bytes)) | VALUE_EXTERNAL_STR_MASK );
     }
     else {
         uint64_t res = 0;
@@ -93,7 +93,7 @@ ObjectId RelationalModel::get_string_unmasked_id(const string& str) {
             res |= byte << shift_size;
             shift_size += 8;
         }
-        return ObjectId(res);
+        return ObjectId(res | VALUE_INLINE_STR_MASK);
     }
 }
 
@@ -115,14 +115,14 @@ ObjectId RelationalModel::get_value_masked_id(const Value& value) {
 }
 
 
-ObjectId RelationalModel::get_or_create_string_unmasked_id(const std::string& str) {
+ObjectId RelationalModel::get_or_create_string_id(const std::string& str) {
     int string_len = str.length();
 
     if (string_len > MAX_INLINED_BYTES) {
         auto bytes = make_unique<vector<unsigned char>>(string_len);
         copy(str.begin(), str.end(), bytes->begin());
 
-        return ObjectId( get_or_create_external_id(move(bytes)) );
+        return ObjectId( get_or_create_external_id(move(bytes)) | VALUE_EXTERNAL_STR_MASK);
     }
     else {
         uint64_t res = 0;
@@ -131,7 +131,7 @@ ObjectId RelationalModel::get_or_create_string_unmasked_id(const std::string& st
             res |= byte << shift_size;
             shift_size += 8;
         }
-        return ObjectId(res);
+        return ObjectId(res | VALUE_INLINE_STR_MASK);
     }
 }
 

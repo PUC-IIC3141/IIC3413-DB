@@ -37,7 +37,11 @@ void FileManager::init(std::string _db_folder) {
 
 FileManager::~FileManager() {
     buffer_manager.flush();
-    // TODO: delete temporary files
+
+    // delete temporary files
+    for (int i = 0; i < tmp_count; i++) {
+        remove(get_file_id(".tmp" + i));
+    }
 }
 
 
@@ -110,6 +114,11 @@ void FileManager::read_page(PageId page_id, char* bytes) {
 fstream& FileManager::get_file(FileId file_id) {
     ensure_open(file_id);
     return *opened_files[file_id.id];
+}
+
+
+FileId FileManager::get_tmp_file_id() {
+    return get_file_id(".tmp" + tmp_count++);
 }
 
 

@@ -30,6 +30,7 @@ set(BUILD_TARGETS
     check_bpts
     server
     lab3_example
+    lab3_example2
 )
 
 set(TEST_TARGETS
