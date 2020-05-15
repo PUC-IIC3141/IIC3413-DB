@@ -9,7 +9,6 @@
 namespace parser
 {
     namespace x3 = boost::spirit::x3;
-    namespace ascii = boost::spirit::x3::ascii;
 
     using x3::lit;
     using x3::lexeme;
@@ -28,7 +27,7 @@ namespace parser
     using x3::eoi;
     // using x3::string;
 
-    using ascii::char_;
+    using x3::char_;
 
     // Declare skipper
     auto const skipper =

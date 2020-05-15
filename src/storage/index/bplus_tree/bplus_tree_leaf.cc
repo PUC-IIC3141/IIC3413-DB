@@ -23,7 +23,7 @@ BPlusTreeLeaf::~BPlusTreeLeaf() {
 unique_ptr<Record> BPlusTreeLeaf::get(const Record& key) {
     int index = search_index(0, *value_count-1, key);
 
-    if (equal_record(key, index)) {
+    if (index < *value_count && equal_record(key, index)) {
         vector<uint64_t> ids(params.value_size);
         for (int i = 0; i < params.value_size; i++) {
             ids[i] = records[index*params.total_size + params.key_size + i];
@@ -53,7 +53,7 @@ unique_ptr<BPlusTreeLeaf> BPlusTreeLeaf::get_next_leaf() {
 
 unique_ptr<BPlusTreeSplit> BPlusTreeLeaf::insert(const Record& key, const Record& value) {
     int index = search_index(0, *value_count-1, key);
-    if (equal_record(key, index)) {
+    if (index < *value_count && equal_record(key, index)) {
         for (int i = 0; i < params.key_size; i++) {
             cout << key.ids[i] << " ";
         }

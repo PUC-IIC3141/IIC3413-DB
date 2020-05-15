@@ -5,13 +5,11 @@
 #include "base/ids/var_id.h"
 #include "relational_model/binding/binding_id.h"
 #include "relational_model/binding/binding_id_iter.h"
+#include "relational_model/query_optimizer/query_optimizer_element.h"
 
 #include <map>
 #include <memory>
 #include <vector>
-
-class QueryOptimizerElement;
-class ObjectFile;
 
 class Match : public BindingIter {
 
@@ -24,6 +22,7 @@ private:
     std::unique_ptr<BindingIdIter> get_join_plan();
 
 public:
+    Match(std::unique_ptr<BindingIdIter> root, std::map<std::string, VarId> var_pos);
     Match(std::vector<std::unique_ptr<QueryOptimizerElement>> elements, std::map<std::string, VarId> var_pos);
     ~Match() = default;
 

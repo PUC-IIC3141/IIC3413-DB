@@ -18,6 +18,8 @@ public:
     ObjectId(); // initialized with NULL_OBJECT_ID
     ~ObjectId();
 
+    ObjectId(const ObjectId&); // copy constructor
+
     bool is_null();
     bool not_found();
 

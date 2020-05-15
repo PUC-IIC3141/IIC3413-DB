@@ -26,10 +26,10 @@ add_library(graphdb STATIC ${sources})
 
 set(BUILD_TARGETS
     import_graph
-    grammar
     query
     check_bpts
     server
+    lab3_example
 )
 
 set(TEST_TARGETS

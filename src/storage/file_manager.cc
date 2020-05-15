@@ -37,6 +37,7 @@ void FileManager::init(std::string _db_folder) {
 
 FileManager::~FileManager() {
     buffer_manager.flush();
+    // TODO: delete temporary files
 }
 
 

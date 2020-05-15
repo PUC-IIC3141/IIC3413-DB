@@ -10,9 +10,13 @@
 
 using namespace std;
 
-Match::Match(vector<unique_ptr<QueryOptimizerElement>> elements, std::map<std::string, VarId> var_pos)
-    : elements(move(elements)), var_pos(move(var_pos)) {
+Match::Match(unique_ptr<BindingIdIter> root, map<string, VarId> var_pos)
+    : root(move(root)), var_pos(move(var_pos)) { }
 
+
+Match::Match(vector<unique_ptr<QueryOptimizerElement>> elements, std::map<std::string, VarId> var_pos)
+    : elements(move(elements)), var_pos(move(var_pos))
+{
     root = get_join_plan();
 }
 

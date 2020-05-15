@@ -27,7 +27,7 @@ RelationalModel::~RelationalModel() = default;
 
 void RelationalModel::init() {
     instance = make_unique<RelationalModel>();
-    instance->get_catalog().print();
+    // instance->get_catalog().print();
 }
 
 

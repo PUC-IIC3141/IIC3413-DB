@@ -9,7 +9,6 @@
 namespace bulk_import_parser
 {
     namespace x3 = boost::spirit::x3;
-    namespace ascii = boost::spirit::x3::ascii;
 
     // using x3::lit;
     using x3::lexeme;
@@ -31,7 +30,7 @@ namespace bulk_import_parser
     using x3::eoi;
     // using x3::string;
 
-    using ascii::char_;
+    using x3::char_;
 
     auto const skipper =
         blank;//"//" >> *(char_ - eol) >> (eol | eoi);

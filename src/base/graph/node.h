@@ -14,7 +14,9 @@ public:
     uint64_t get_id() { return id; }
 
     std::string to_string() const override {
-        return "Node(" + std::to_string(id) + ")";
+        auto graph = (id & 0xFFFF'00'0000000000UL) >> 48;
+        auto internal_id = id & 0x0000'00'FFFFFFFFFFUL;
+        return "Node(" + std::to_string(graph) + "," + std::to_string(internal_id) + ")";
     }
 
     ObjectType type() const override {

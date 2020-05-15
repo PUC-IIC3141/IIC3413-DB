@@ -27,7 +27,7 @@ iter_begin:
         goto iter_begin;
     }
 
-    result +=  "}\n";
+    result +=  "}";
     return result;
 }
 

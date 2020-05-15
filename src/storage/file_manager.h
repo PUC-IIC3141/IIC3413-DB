@@ -39,6 +39,9 @@ public:
     // Get an id for the corresponding file, creating it if it's necessary
     FileId get_file_id(const std::string& filename);
 
+    // Get an id for a temporary file, file will be deleted at the end of execution.
+    FileId get_tmp_file_id();
+
     // returns the filename assignated to `file_id`
     std::string get_filename(FileId file_id);
 

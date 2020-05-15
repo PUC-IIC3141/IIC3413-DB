@@ -37,7 +37,7 @@ std::string BindingMatch::to_string() const {
         result += std::to_string(unmasked_id);
         result += ')';
     }
-    result += "}\n";
+    result += "}";
     return result;
 }
 

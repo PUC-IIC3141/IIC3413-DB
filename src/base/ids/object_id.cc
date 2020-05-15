@@ -8,6 +8,10 @@ ObjectId::ObjectId()
     : id(NULL_OBJECT_ID) { }
 
 
+ObjectId::ObjectId(const ObjectId& obj)
+    : id(obj.id) { }
+
+
 ObjectId::~ObjectId() = default;
 
 
