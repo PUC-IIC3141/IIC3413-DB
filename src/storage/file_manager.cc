@@ -40,7 +40,7 @@ FileManager::~FileManager() {
 
     // delete temporary files
     for (int i = 0; i < tmp_count; i++) {
-        remove(get_file_id(".tmp" + i));
+        remove( get_file_id(".tmp" + std::to_string(i)) );
     }
 }
 
@@ -118,7 +118,7 @@ fstream& FileManager::get_file(FileId file_id) {
 
 
 FileId FileManager::get_tmp_file_id() {
-    return get_file_id(".tmp" + tmp_count++);
+    return get_file_id(".tmp" + std::to_string(tmp_count++) );
 }
 
 
