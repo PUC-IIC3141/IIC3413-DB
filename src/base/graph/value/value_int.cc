@@ -3,18 +3,11 @@
 
 using namespace std;
 
-ValueInt::ValueInt(int32_t value)
+ValueInt::ValueInt(int64_t value)
     : value(value) { }
 
 
 ValueInt::~ValueInt() = default;
-
-
-unique_ptr<vector<unsigned char>> ValueInt::get_bytes() const {
-    auto res = make_unique<vector<unsigned char>>(sizeof(value));
-    memcpy(res->data(), &value, sizeof(value));
-    return res;
-}
 
 
 string ValueInt::to_string() const {

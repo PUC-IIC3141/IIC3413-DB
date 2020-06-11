@@ -9,14 +9,14 @@ using namespace std;
 BPlusTreeLeaf::BPlusTreeLeaf(const BPlusTreeParams& params, Page& page)
     : params(params), page(page)
 {
-    value_count = (int*) page.get_bytes();
-    next_leaf   = (int*) (page.get_bytes() + sizeof(int));
-    records     = (uint64_t*) (page.get_bytes() + (2*sizeof(int)) );
+    value_count = reinterpret_cast<int*>(page.get_bytes());
+    next_leaf   = reinterpret_cast<int*>(page.get_bytes() + sizeof(int));
+    records     = reinterpret_cast<uint64_t*>(page.get_bytes() + (2*sizeof(int)) );
 }
 
 
 BPlusTreeLeaf::~BPlusTreeLeaf() {
-    page.unpin();
+    buffer_manager.unpin(page);
 }
 
 
@@ -229,8 +229,8 @@ void BPlusTreeLeaf::print() const {
 
 bool BPlusTreeLeaf::check() const {
     if (*value_count <= 0) {
-        cout << "value_count should be greater than 0. ";
-        cout << "got: " << *value_count << "\n";
+        cerr << "ERROR: value_count should be greater than 0. ";
+        cerr << "       got: " << *value_count << "\n";
     }
 
     if (*value_count > 1) {
@@ -249,7 +249,7 @@ bool BPlusTreeLeaf::check() const {
                 y.ids[i] = records[current_pos++];
             }
             if (y <= x) {
-                cout << "bad record order at BPlusTreeLeaf\n";
+                cerr << "ERROR: bad record order at BPlusTreeLeaf\n";
                 print();
                 return false;
             }

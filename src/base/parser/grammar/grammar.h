@@ -16,8 +16,10 @@ namespace parser
     using x3::no_case;
     using x3::alnum;
     using x3::graph;
-    using x3::int_;
-    using x3::float_;
+    using x3::int64;
+    using x3::int32;
+    // using x3::float_;
+    x3::real_parser<float, x3::strict_real_policies<float> > const float_ = {};
     using x3::attr;
     using x3::omit;
     using x3::space;
@@ -27,7 +29,7 @@ namespace parser
     using x3::eoi;
     // using x3::string;
 
-    using ascii::char_;
+    using x3::char_;
 
     // Declare skipper
     auto const skipper =
@@ -76,10 +78,10 @@ namespace parser
         lexeme['?' >> +(alnum)];
 
     auto const key =
-        lexeme[+char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'")];
+        lexeme[+char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'_")];
 
     auto const label =
-        lexeme[':' >> +char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'")];
+        lexeme[':' >> +char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'_")];
 
     auto const func =
         lexeme[+(alnum)];
@@ -92,7 +94,7 @@ namespace parser
         (lexeme['\'' >> *(char_ - '\'') >> '\'']);
 
     auto const value_def =
-        string | float_ | int_ | boolean;
+        string | float_ | int64 | boolean;
 
     auto const property_def =
         key >> ':' >> value;
@@ -108,7 +110,8 @@ namespace parser
         ("<-" >> -('[' >> nomen >> "]-") >> attr(ast::EdgeDirection::left));
 
     auto const linear_pattern_def =
-        attr(GraphId(0)) >> node >> *(edge >> node);
+        // using attr("") won't work propertly
+        node >> *(edge >> node) >> ((no_case["ON"] >> string) | attr(std::string()) );
 
     auto const selection =
         lit('*') >> attr(ast::All()) | (element % ',');
@@ -135,11 +138,15 @@ namespace parser
     auto const where_statement =
         no_case["where"] >> formula;
 
+    auto const limit_statement =
+        no_case["limit"] >> int32;
+
     auto const root_def =
-        select_statement >> match_statement >> -(where_statement);
+        (no_case["explain"] >> attr(true)) >> select_statement >> match_statement >> -(where_statement) >> -(limit_statement) |
+        (attr(false)) >> select_statement >> match_statement >> -(where_statement) >> -(limit_statement);
 
     auto const element_def =
-        (attr(std::string()) >> var >> '.' >> key) |
+        (attr(std::string()) >> var >> '.' >> key) | // using attr("") won't work propertly
         (func >> '(' >> var >> '.' >> key >> ')');
 
     BOOST_SPIRIT_DEFINE(

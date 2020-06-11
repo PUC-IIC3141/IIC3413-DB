@@ -5,16 +5,15 @@
 
 class Edge : public GraphObject {
 public:
+    const uint_fast16_t graph;
     const uint64_t id;
 
-    Edge(uint64_t id)
-        : id(id) { }
+    Edge(uint_fast16_t graph, uint64_t id)
+        : graph(graph), id(id) { }
     ~Edge() = default;
 
-    uint64_t get_id() { return id; }
-
     std::string to_string() const override {
-        return "Edge(" + std::to_string(id) + ")";
+        return "Edge(" + std::to_string(graph) + ", " + std::to_string(id) + ")";
     }
 
     ObjectType type() const override {

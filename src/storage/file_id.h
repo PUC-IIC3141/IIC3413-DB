@@ -10,7 +10,7 @@
 
 class FileId {
 public:
-    static const uint_fast32_t UNASSIGNED = -1;
+    static constexpr uint_fast32_t UNASSIGNED = UINT32_MAX;
 
     uint_fast32_t id;
 

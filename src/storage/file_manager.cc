@@ -1,9 +1,5 @@
 #include "file_manager.h"
 
-#include "storage/file_id.h"
-#include "storage/page.h"
-#include "storage/buffer_manager.h"
-
 #include <algorithm>
 #include <cstdio>
 #include <experimental/filesystem>
@@ -11,26 +7,38 @@
 #include <new>         // placement new
 #include <type_traits> // aligned_storage
 
+#include "storage/file_id.h"
+#include "storage/page.h"
+
 using namespace std;
 
-static int nifty_counter; // zero initialized at load time
-static typename std::aligned_storage<sizeof (FileManager), alignof (FileManager)>::type
-    file_manager_buf; // memory for the object
-FileManager& file_manager = reinterpret_cast<FileManager&> (file_manager_buf);
+// memory for the object
+static typename std::aligned_storage<sizeof(FileManager), alignof(FileManager)>::type file_manager_buf;
+// global object
+FileManager& file_manager = reinterpret_cast<FileManager&>(file_manager_buf);
 
-FileManager::FileManager() {
+
+FileManager::FileManager(std::string _db_folder) :
+    db_folder(_db_folder)
+{
+    if (experimental::filesystem::exists(db_folder)) {
+        if (!experimental::filesystem::is_directory(db_folder)) {
+            throw std::runtime_error("Cannot create database directory: \"" + db_folder +
+                                     "\", a file with that name already exists.");
+        }
+    }
+    else {
+        experimental::filesystem::create_directories(db_folder);
+    }
 }
 
 
 FileManager::~FileManager() {
-    cout << "~FileManager()\n";
+}
 
-    buffer_manager.flush();
-    for (auto file : opened_files) {
-        if (file->is_open()) {
-            file->close();
-        }
-    }
+
+void FileManager::init(std::string db_folder) {
+    new (&file_manager) FileManager(db_folder); // placement new
 }
 
 
@@ -53,12 +61,14 @@ void FileManager::close(FileId file_id) {
 
 
 void FileManager::remove(FileId file_id) {
+    // TODO: integrar buffer manager
     close(file_id);
     std::remove(filenames[file_id.id].c_str());
 }
 
 
 void FileManager::rename(FileId old_name_id, FileId new_name_id) {
+    // TODO: integrar buffer manager
     close(old_name_id);
     close(new_name_id);
 
@@ -107,7 +117,9 @@ fstream& FileManager::get_file(FileId file_id) {
 
 
 FileId FileManager::get_file_id(const string& filename) {
-    string file_path = "test_files/" + filename; // TODO: get folder path by config and/or graph?
+    string file_path = db_folder + "/" + filename;
+    // TODO: si el modelo cambiara y se necesitaran tener muchos archivos
+    // distintos, hay que cambiar la busqueda para que sea O(log n)
     for (size_t i = 0; i < filenames.size(); i++) {
         if (file_path.compare(filenames[i]) == 0) {
             return FileId(i);
@@ -115,23 +127,16 @@ FileId FileManager::get_file_id(const string& filename) {
     }
 
     filenames.push_back(file_path);
-    fstream* file = new fstream();
+    auto file = make_unique<fstream>();
     if (!experimental::filesystem::exists(file_path)) {
         file->open(file_path, ios::out|ios::app);
+        if (file->fail()) {
+            throw std::runtime_error("Could not open file " + file_path);
+        }
         file->close();
     }
     file->open(file_path, ios::in|ios::out|ios::binary);
-    opened_files.push_back(file);
+    opened_files.push_back(move(file));
 
     return FileId(filenames.size()-1);
-}
-
-
-// Nifty counter trick
-FileManagerInitializer::FileManagerInitializer() {
-    if (nifty_counter++ == 0) new (&file_manager) FileManager(); // placement new
-}
-
-FileManagerInitializer::~FileManagerInitializer() {
-    if (--nifty_counter == 0) (&file_manager)->~FileManager();
 }

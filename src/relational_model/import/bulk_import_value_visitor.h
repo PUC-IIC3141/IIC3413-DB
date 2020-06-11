@@ -16,7 +16,7 @@ public:
         return boost::apply_visitor(*this, value);
     }
 
-    std::unique_ptr<Value> operator() (int const& n) const {
+    std::unique_ptr<Value> operator() (int64_t const& n) const {
         return std::make_unique<ValueInt>(n);
     }
 

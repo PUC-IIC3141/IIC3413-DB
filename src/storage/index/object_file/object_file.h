@@ -1,13 +1,13 @@
 /*
- * Object File is designed to contain all labels, all keys and some values (those that need more than 56 bits to be
+ * Object File is designed to contain all labels, all keys and some values (those that need more than 7 bytes to be
  * encoded). Strings are meant to be encoded in UTF-8.
  *
  * To store an object, the ObjectFile will receive the bytes from the object and it will append to the file the
  * length in bytes followed by the actual bytes. The position where the length was written is returned so
- * the object can be readed later using that position. The 64 bits ID of a graph element that represent an object
- * contains the position encoded in the last 56 bits (and first 8 bits are used to determine the type).
+ * the object can be readed later using that position. The 8-byte ID of a graph element that represent an object
+ * contains the position encoded in the last 7 bytes (and first byte is used to determine the type).
  *
- * Because the ID=0 is special (represents a non-existent object), we need to write a trash byte when creating the
+ * Because the ID=0 is special (represents the null object), we need to write a trash byte when creating the
  * file so the first object will have the ID=1.
  * */
 

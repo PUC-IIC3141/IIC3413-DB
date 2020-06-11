@@ -10,13 +10,6 @@ ValueFloat::ValueFloat(float value)
 ValueFloat::~ValueFloat() = default;
 
 
-unique_ptr<vector<unsigned char>> ValueFloat::get_bytes() const {
-    auto res = make_unique<vector<unsigned char>>(sizeof(value));
-    memcpy(res->data(), &value, sizeof(value));
-    return res;
-}
-
-
 string ValueFloat::to_string() const {
     return std::to_string(value);
 }

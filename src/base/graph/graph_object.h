@@ -15,6 +15,7 @@ enum class ObjectType {
 
 class GraphObject {
 public:
+    virtual ~GraphObject() { };
     virtual std::string to_string() const = 0;
     virtual ObjectType type() const = 0;
 

@@ -2,11 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Query",
+            "name": "Server",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/bin/query",
-            "args": ["${workspaceFolder}/tests/query_debug"],
+            "program": "${workspaceFolder}/build/Debug/bin/server",
+            "args": [
+                "-d",
+                "${workspaceFolder}/test_files/db"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -27,13 +30,46 @@
             ]
         },
         {
-            "name": "CreateDB",
+            "name": "Query",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/bin/create_db",
+            "program": "${workspaceFolder}/build/Debug/bin/query",
             "args": [
+                "${workspaceFolder}/tests/query_debug"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "windows": {
+                "miDebuggerPath": "C:\\tools\\msys64\\mingw64\\bin\\gdb.exe",
+            },
+            "linux": {
+                "miDebuggerPath": "/usr/bin/gdb",
+            },
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "ImportGraph",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/bin/import_graph",
+            "args": [
+                "-n",
                 "${workspaceFolder}/test_files/graph_creation_example/nodes.txt",
-                "${workspaceFolder}/test_files/graph_creation_example/edges.txt"
+                "-e",
+                "${workspaceFolder}/test_files/graph_creation_example/edges.txt",
+                "-g",
+                "graph debug",
+                "-d",
+                "${workspaceFolder}/test_files/db"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

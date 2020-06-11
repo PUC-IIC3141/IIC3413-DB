@@ -17,7 +17,8 @@ namespace bulk_import_parser
     using x3::alnum;
     // using x3::alpha;
     // using x3::graph;
-    using x3::int32;
+    using x3::uint64;
+    using x3::int64;
     // using x3::int_;
     // using x3::float_;
     x3::real_parser<float, x3::strict_real_policies<float> > const float_ = {};
@@ -31,10 +32,9 @@ namespace bulk_import_parser
     using x3::eoi;
     // using x3::string;
 
-    using ascii::char_;
+    using x3::char_;
 
-    auto const skipper =
-        blank;//"//" >> *(char_ - eol) >> (eol | eoi);
+    auto const skipper = blank;
 
     // Declare rules
     x3::rule<class node, bulk_import_ast::Node>
@@ -52,11 +52,11 @@ namespace bulk_import_parser
     ///////////////////////////////////////////////////////////
     auto const key =
         // lexeme[+alnum];
-        lexeme[+char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'")];
+        lexeme[+char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'_")];
 
     auto const label =
         // lexeme[':' >> +alnum];
-        lexeme[':' >> +char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'")];
+        lexeme[':' >> +char_("A-Za-zÁÉÍÓÚáéíóúÑñèç0-9#'_")];
 
 
     auto const boolean = lexeme[
@@ -65,17 +65,17 @@ namespace bulk_import_parser
     ];
 
     auto const string =
-        ('"'  >> *(char_ - '"')  >> '"') |
-        ('\'' >> *(char_ - '\'') >> '\'');
+        (lexeme['"' >> *(char_ - '"') >> '"']) |
+        (lexeme['\'' >> *(char_ - '\'') >> '\'']);
 
     auto const value_def =
-        string | float_ | int32 | boolean;
+        string | float_ | int64 | boolean;
 
     auto const property_def =
         key >> ':' >> value;
 
     auto const node_def =
-        '(' >> int32 >> ')'
+        '(' >> uint64 >> ')'
         >> *label
         >> *property
         >> (eol|eoi);
@@ -86,7 +86,7 @@ namespace bulk_import_parser
     ];
 
     auto const edge_def =
-        '(' >> int32 >> ')' >> edge_dir >> '(' >> int32 >> ')'
+        '(' >> uint64 >> ')' >> edge_dir >> '(' >> uint64 >> ')'
         >> *label
         >> *property
         >> (eol|eoi);

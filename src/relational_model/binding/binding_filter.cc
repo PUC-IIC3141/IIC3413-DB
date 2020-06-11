@@ -1,15 +1,16 @@
 #include "binding_filter.h"
 
 #include "relational_model/relational_model.h"
-#include "relational_model//graph/relational_graph.h"
+#include "relational_model/graph/relational_graph.h"
 
 using namespace std;
 
-BindingFilter::BindingFilter(Binding& binding, map<string, pair<GraphId, ObjectType>>& var_info)
-    : binding(binding), var_info(var_info) { }
+BindingFilter::BindingFilter(Binding& binding, map<string, GraphId>& var2graph_id,
+                             map<string, ObjectType>& element_types)
+    : binding(binding), var2graph_id(var2graph_id), element_types(element_types) { }
 
 
-void BindingFilter::print() const {
+std::string BindingFilter::to_string() const {
     throw std::logic_error("Binding filter only intended to be used by get()");
 }
 
@@ -30,32 +31,31 @@ std::shared_ptr<GraphObject> BindingFilter::get(const std::string& var, const st
         return (*search).second;
     }
     else { // no esta en el cache ni el el binding original
-        auto info = var_info[var];
-        auto key_object_id = RelationalModel::get_string_unmasked_id(key);
+        auto graph_id = var2graph_id[var];
+        auto element_type = element_types[var];
+        auto key_object_id = relational_model.get_string_id(key);
         auto var_value = binding[var];
 
         unique_ptr<BPlusTree::Iter> it = nullptr;
-        if (info.second == ObjectType::node) {
+        if (element_type == ObjectType::node) {
             Node node = static_cast<const Node&>(*var_value);
-            auto& graph = RelationalModel::get_graph(info.first);
-            it = graph.node2prop->get_range(
-                Record(node.id | NODE_MASK, key_object_id, 0),
-                Record(node.id | NODE_MASK, key_object_id, UINT64_MAX)
+            it = relational_model.get_node_key_value().get_range(
+                Record(node.id, key_object_id, 0),
+                Record(node.id, key_object_id, UINT64_MAX)
             );
         }
         else {
             Edge edge = static_cast<const Edge&>(*var_value);
-            auto& graph = RelationalModel::get_graph(info.first);
-            it = graph.edge2prop->get_range(
-                Record(edge.id | EDGE_MASK, key_object_id, 0),
-                Record(edge.id | EDGE_MASK, key_object_id, UINT64_MAX)
+            it = relational_model.get_edge_key_value().get_range(
+                Record(edge.id, key_object_id, 0),
+                Record(edge.id, key_object_id, UINT64_MAX)
             );
         }
 
         auto res = it->next();
         if (res != nullptr) {
             auto value_obj_id = ObjectId(res->ids[2]);
-            auto res = RelationalModel::get_graph_object(value_obj_id);
+            auto res = relational_model.get_graph_object(value_obj_id);
             cache.insert({ search_var, res });
             return res;
         }

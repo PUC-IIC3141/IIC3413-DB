@@ -4,8 +4,9 @@
 
 using namespace std;
 
-OpSelect::OpSelect(const boost::variant<ast::All, vector<ast::Element>>& selection, unique_ptr<Op> op)
-    : op(move(op))
+OpSelect::OpSelect(const boost::variant<ast::All, vector<ast::Element>>& selection, unique_ptr<Op> op,
+                   uint_fast32_t limit)
+    : limit(limit), op(move(op))
 {
     if (selection.type() == typeid(ast::All)) {
         select_all = true;

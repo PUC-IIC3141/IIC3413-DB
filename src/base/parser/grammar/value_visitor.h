@@ -1,21 +1,20 @@
 #ifndef BASE__VALUE_VISITOR_H_
 #define BASE__VALUE_VISITOR_H_
 
+#include <boost/variant.hpp>
+
 #include "base/graph/value/value_int.h"
 #include "base/graph/value/value_float.h"
 #include "base/graph/value/value_bool.h"
 #include "base/graph/value/value_string.h"
 
-#include <boost/variant.hpp>
-
 class ValueVisitor : public boost::static_visitor<std::unique_ptr<Value>> {
-
 public:
     std::unique_ptr<Value> operator() (ast::Value value) const {
         return boost::apply_visitor(*this, value);
     }
 
-    std::unique_ptr<Value> operator() (int const& n) const {
+    std::unique_ptr<Value> operator() (int64_t const& n) const {
         return std::make_unique<ValueInt>(n);
     }
 
@@ -31,4 +30,5 @@ public:
         return std::make_unique<ValueString>(text);
     }
 };
-#endif //BASE__VALUE_VISITOR_H_
+
+#endif // BASE__VALUE_VISITOR_H_

@@ -17,7 +17,9 @@ public:
     ~BPlusTreeDir();
 
     std::unique_ptr<BPlusTreeSplit> bulk_insert(BPlusTreeLeaf& leaf);
-    std::unique_ptr<BPlusTreeSplit> insert(const Record& key, const Record& value); // returns not null if needs to split
+
+    // returns not null when it needs to split
+    std::unique_ptr<BPlusTreeSplit> insert(const Record& key, const Record& value);
 
     std::unique_ptr<Record> get(const Record& key);
     SearchLeafResult search_leaf(const Record& min);
@@ -29,7 +31,7 @@ public:
 
 private:
     const BPlusTreeParams& params;
-    Page& page; // Page * const
+    Page& page;
     int* key_count;
     uint64_t* keys;
     int* children;

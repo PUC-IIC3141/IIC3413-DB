@@ -1,3 +1,18 @@
+/*
+ * BPlusTree allows to search a record in logarithmic time
+ *
+ * example usage:
+ * // search all records between (0,0) and (20, 1000)
+ * // (including equal records)
+ * auto iter = bplus_tree.get_range(Record(0, 0), Record(20, 1000));
+ * auto record = iter->next();
+ * while (record != nullptr) {
+ *     // record is a not-null unique_ptr<Record>
+ *     // do some work with record
+ *     record = iter->next();
+ * }
+ * */
+
 #ifndef STORAGE__B_PLUS_TREE_H_
 #define STORAGE__B_PLUS_TREE_H_
 
@@ -11,9 +26,9 @@ class Record;
 class OrderedFile;
 class BPlusTreeDir;
 class BPlusTreeParams;
+class BptLeafProvider;
 
-class BPlusTree
-{
+class BPlusTree {
 private:
     bool is_empty;
     std::unique_ptr<BPlusTreeDir> root;
@@ -25,7 +40,7 @@ public:
     BPlusTree(std::unique_ptr<BPlusTreeParams> params);
     ~BPlusTree() = default;
 
-    void bulk_import(OrderedFile&);
+    void bulk_import(BptLeafProvider&);
 
     void insert(const Record& record);
     void insert(const Record& key, const Record& value);
@@ -33,7 +48,6 @@ public:
     bool check() const;
 
     std::unique_ptr<Record> get(const Record& record);
-
 
     class Iter {
         public:

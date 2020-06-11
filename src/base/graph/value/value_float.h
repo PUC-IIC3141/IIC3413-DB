@@ -12,8 +12,6 @@ public:
     ValueFloat(float value);
     ~ValueFloat();
 
-    std::unique_ptr<std::vector<unsigned char>> get_bytes() const override;
-
     std::string to_string() const override;
 
     ObjectType type() const override;
@@ -25,6 +23,5 @@ public:
     bool operator<(const GraphObject& rhs) const override;
     bool operator>(const GraphObject& rhs) const override;
 };
-
 
 #endif // BASE__VALUE_FLOAT_H_

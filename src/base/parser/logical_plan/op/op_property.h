@@ -9,18 +9,18 @@
 
 class OpProperty : public Op {
 public:
-    const GraphId graph_id;
+    const std::string graph_name;
     const ObjectType type;
     const std::string var;
     const std::string key;
     const ast::Value value;
 
-    OpProperty(GraphId graph_id, ObjectType type, std::string var, std::string key, ast::Value value)
-        : graph_id(graph_id), type(type), var(std::move(var)), key(std::move(key)), value(std::move(value)) { }
+    OpProperty(std::string graph_name, ObjectType type, std::string var, std::string key, ast::Value value)
+        : graph_name(graph_name), type(type), var(std::move(var)), key(std::move(key)), value(std::move(value)) { }
 
     void accept_visitor(OpVisitor& visitor) {
         visitor.visit(*this);
     }
 };
 
-#endif //BASE__OP_PROPERTY_H_
+#endif // BASE__OP_PROPERTY_H_

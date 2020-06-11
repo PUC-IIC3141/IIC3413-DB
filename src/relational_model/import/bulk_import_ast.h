@@ -13,7 +13,7 @@
 namespace bulk_import_ast {
     namespace x3 = boost::spirit::x3;
 
-    typedef boost::variant<std::string, int, float, bool> Value;
+    typedef boost::variant<std::string, int64_t, float, bool> Value;
 
     struct Property {
         std::string key;
@@ -21,7 +21,7 @@ namespace bulk_import_ast {
     };
 
     struct Node {
-        unsigned int id;
+        uint64_t id;
         std::vector<std::string> labels;
         std::vector<Property> properties;
     };
@@ -29,8 +29,8 @@ namespace bulk_import_ast {
     enum class EdgeDirection { right, left };
 
     struct Edge {
-        unsigned int left_id;
-        unsigned int right_id;
+        uint64_t left_id;
+        uint64_t right_id;
         std::vector<std::string> labels;
         std::vector<Property> properties;
         EdgeDirection direction;

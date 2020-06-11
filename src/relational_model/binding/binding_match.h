@@ -18,11 +18,11 @@ private:
 public:
     BindingMatch(const std::map<std::string, VarId>& var_pos,
         std::unique_ptr<BindingId> binding_id);
-    ~BindingMatch() = default;
+    ~BindingMatch();
 
-    void print() const;
+    std::string to_string() const;
     std::shared_ptr<GraphObject> operator[](const std::string& var);
     std::shared_ptr<GraphObject> get(const std::string& var, const std::string& key);
 };
 
-#endif //RELATIONAL_MODEL__BINDING_MATCH_H_
+#endif // RELATIONAL_MODEL__BINDING_MATCH_H_

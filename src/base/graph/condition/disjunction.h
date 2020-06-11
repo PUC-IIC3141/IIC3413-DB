@@ -1,11 +1,10 @@
 #ifndef BASE__DISJUNCTION_H_
 #define BASE__DISJUNCTION_H_
 
-#include "base/graph/condition/condition.h"
-
 #include <memory>
 #include <vector>
-#include <iostream>
+
+#include "base/graph/condition/condition.h"
 
 class Disjunction : public Condition {
 public:
@@ -16,7 +15,6 @@ public:
         : conditions (std::move(conditions)) { }
 
     bool eval(Binding& binding) {
-        // std::cout << "eval disjunction. conditions: " << conditions.size() << "\n";
         for (auto& condition : conditions) {
             if (condition->eval(binding)) {
                 return true;
@@ -33,6 +31,11 @@ public:
         conditions.push_back(std::move(condition));
     }
 
+    void check_names(std::map<std::string, ObjectType>& m) {
+        for (auto& condition : conditions) {
+            condition->check_names(m);
+        }
+    }
 };
 
-#endif //BASE__DISJUNCTION_H_
+#endif // BASE__DISJUNCTION_H_

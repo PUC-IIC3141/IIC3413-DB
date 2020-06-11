@@ -11,13 +11,21 @@ ObjectId::ObjectId()
 ObjectId::~ObjectId() = default;
 
 
+ObjectId::ObjectId(const ObjectId& obj)
+    : id(obj.id) { }
+
+
+ObjectId ObjectId::get_null() {
+    return ObjectId(NULL_OBJECT_ID);
+}
+
 bool ObjectId::is_null() {
     return id == NULL_OBJECT_ID;
 }
 
 
 bool ObjectId::not_found() {
-    return id == NOT_FOUND_OBJECT_ID;
+    return id == OBJECT_ID_NOT_FOUND;
 }
 
 

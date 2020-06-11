@@ -1,11 +1,10 @@
 #ifndef BASE__COJUNCTION_H_
 #define BASE__COJUNCTION_H_
 
-#include "base/graph/condition/condition.h"
-
 #include <memory>
 #include <vector>
-#include <iostream>
+
+#include "base/graph/condition/condition.h"
 
 class Conjunction : public Condition {
 public:
@@ -32,6 +31,11 @@ public:
         conditions.push_back(std::move(condition));
     }
 
+    void check_names(std::map<std::string, ObjectType>& m) {
+        for (auto& condition : conditions) {
+            condition->check_names(m);
+        }
+    }
 };
 
-#endif //BASE__COJUNCTION_H_
+#endif // BASE__COJUNCTION_H_

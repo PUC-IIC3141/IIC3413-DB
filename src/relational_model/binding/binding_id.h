@@ -11,7 +11,7 @@
 class BindingId {
 
 private:
-    std::vector<ObjectId> dict;
+    std::vector<ObjectId> object_ids;
 
 public:
     BindingId(int_fast32_t var_count);
@@ -23,8 +23,8 @@ public:
     void add_all(BindingId&);
     void add(VarId, ObjectId);
 
-    void print(std::vector<std::string>& var_names) const;
+    void print() const;
 };
 
 
-#endif //RELATIONAL_MODEL__BINDING_ID_H_
+#endif // RELATIONAL_MODEL__BINDING_ID_H_

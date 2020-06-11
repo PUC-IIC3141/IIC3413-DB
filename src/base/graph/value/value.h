@@ -9,7 +9,7 @@
 
 class Value : public GraphObject {
 public:
-    virtual std::unique_ptr<std::vector<unsigned char>> get_bytes() const = 0;
+    virtual ~Value() { };
 };
 
-#endif //BASE__VALUE_H_
+#endif // BASE__VALUE_H_
